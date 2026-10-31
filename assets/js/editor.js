@@ -1,4 +1,5 @@
 import { $, $$, supabase, isConfigured, showConfigWarning, requireUser, isAdmin, esc, cleanSlug, safeUrl, formatDate, toast, signOut, appUrl } from './core.js';
+import { renderLinkIcon, resolveLinkIcon } from './link-icons.js';
 
 const presets = {
   aurora:{accent:'#8a7cff',accent2:'#62d9cf',background:'#0c101b',mode:'dark',animation:'aurora',card:'glass'},
@@ -28,6 +29,7 @@ function updatePreview(){
   p.style.setProperty('--ptxt',t.mode==='light'?'#22283b':'#f4f5ff');
   p.style.setProperty('--paccent',t.accent);p.style.setProperty('--paccent2',t.accent2);
   p.classList.toggle('no-anim',t.animation==='none');p.classList.toggle('card-outline',t.card==='outline');
+  p.classList.remove('anim-aurora','anim-float','anim-glow','anim-pulse','anim-none');p.classList.add(`anim-${t.animation||'aurora'}`);
   if(t.animation==='float') p.style.setProperty('--angle','0deg');
   p.style.background=t.card==='outline'?'transparent':(t.card==='glass'?(t.mode==='light'?'rgba(248,248,255,.88)':'rgba(18,23,37,.82)'):t.background);
   const avatar=$('#previewAvatar'), src=val('avatarUrl').trim();
@@ -47,8 +49,10 @@ function updatePreview(){
   if(checked('showWeight') && val('weightKg')) facts.push(`⚖ ${val('weightKg')} كجم`);
   if(checked('showOccupation') && val('occupation').trim()) facts.push(val('occupation').trim());
   $('#previewFacts').innerHTML=facts.map(x=>`<span class="fact-chip">${esc(x)}</span>`).join('');
-  const rows=$$('#linkRows .link-edit-row').map(row=>({label:row.querySelector('.link-label-input').value.trim(),url:row.querySelector('.link-url-input').value.trim(),icon:row.querySelector('.link-icon-input').value.trim()})).filter(x=>x.label && safeUrl(x.url));
-  $('#previewLinks').innerHTML=rows.map(l=>`<div class="preview-link"><span>${esc(l.icon||'↗')} &nbsp; ${esc(l.label)}</span><span>↗</span></div>`).join('') || '<p class="muted small">روابطك هتظهر هنا بعد إضافتها.</p>';
+  const linkRows=$$('#linkRows .link-edit-row');
+  const rows=linkRows.map(row=>({label:row.querySelector('.link-label-input').value.trim(),url:row.querySelector('.link-url-input').value.trim(),icon:row.querySelector('.link-icon-input').value.trim()})).filter(x=>x.label && safeUrl(x.url));
+  linkRows.forEach(row=>{const host=row.querySelector('.link-icon-editor');if(host){const label=row.querySelector('.link-label-input').value.trim(),url=row.querySelector('.link-url-input').value.trim(),icon=row.querySelector('.link-icon-input').value.trim();host.outerHTML=renderLinkIcon(url,label,icon,'link-icon-editor');}});
+  $('#previewLinks').innerHTML=rows.map(l=>`<div class="preview-link"><span class="preview-link-main">${renderLinkIcon(l.url,l.label,l.icon,'link-icon-preview')}<span>${esc(l.label)}</span></span><span class="preview-external">↗</span></div>`).join('') || '<p class="muted small">روابطك هتظهر هنا بعد إضافتها.</p>';
   updateShare();
 }
 function makeAvatarFallback(){const d=document.createElement('div');d.id='previewAvatar';d.className='preview-avatar-fallback';d.textContent=(val('displayName').trim().slice(0,1)||'L').toUpperCase();return d;}
@@ -57,7 +61,8 @@ function renderLinkRows(links=[]){
   const host=$('#linkRows');host.innerHTML='';
   links.forEach(l=>{
     const row=document.createElement('div');row.className='link-edit-row';row.dataset.linkId=l.id||'';
-    row.innerHTML=`<input class="link-label-input" maxlength="70" aria-label="اسم الرابط" placeholder="Instagram" value="${esc(l.label||'')}"><input class="link-url-input" type="url" aria-label="عنوان الرابط" placeholder="https://…" value="${esc(l.url||'')}"><input class="link-icon-input" maxlength="8" aria-label="رمز الرابط" placeholder="↗" value="${esc(l.icon||'↗')}"><button type="button" class="btn btn-danger btn-small remove-link" aria-label="حذف الرابط">حذف</button>`;
+    const autoKey=resolveLinkIcon(l.url||'',l.label||'','').key;const savedKey=resolveLinkIcon(l.url||'',l.label||'',l.icon||'').key;const autoValue=(!l.icon||['↗','→','➜'].includes(l.icon)||(!savedKey.startsWith('custom')&&savedKey===autoKey))?'':l.icon;
+    row.innerHTML=`<input class="link-label-input" maxlength="70" aria-label="اسم الرابط" placeholder="Instagram" value="${esc(l.label||'')}"><input class="link-url-input" type="url" aria-label="عنوان الرابط" placeholder="https://…" value="${esc(l.url||'')}"><div class="link-icon-control">${renderLinkIcon(l.url||'',l.label||'',l.icon||'','link-icon-editor')}<input class="link-icon-input" maxlength="24" aria-label="رمز مخصص اختياري" placeholder="تلقائي" value="${esc(autoValue)}"></div><button type="button" class="btn btn-danger btn-small remove-link" aria-label="حذف الرابط">حذف</button>`;
     host.append(row);
   });
   $('#emptyLinks').hidden=links.length>0;
@@ -101,7 +106,7 @@ async function saveAll(){
     const name=val('displayName').trim(), slug=cleanSlug(val('username'));
     if(!name)throw new Error('اكتب الاسم الظاهر.');if(slug.length<3||slug.length>28)throw new Error('اسم الرابط لازم يكون من 3 إلى 28 حرفًا، ويحتوي حروفًا إنجليزية أو أرقامًا أو شرطة.');
     if(val('birthDate') && new Date(val('birthDate'))>new Date())throw new Error('تاريخ الميلاد لا يمكن أن يكون في المستقبل.');
-    const normalizedLinks=[];for(const row of $$('#linkRows .link-edit-row')){const label=row.querySelector('.link-label-input').value.trim(),url=row.querySelector('.link-url-input').value.trim(),icon=row.querySelector('.link-icon-input').value.trim();if(!label&&!url)continue;if(!label||!url)throw new Error('أكمل اسم الرابط وعنوانه، أو احذف الصف الفارغ.');const valid=safeUrl(url);if(!valid)throw new Error(`عنوان الرابط غير صالح: ${label}. استخدم https:// أو mailto: أو tel:.`);normalizedLinks.push({id:row.dataset.linkId||null,label,url:valid,icon:icon||'↗',sort_order:normalizedLinks.length,is_enabled:true,profile_id:profileId});}
+    const normalizedLinks=[];for(const row of $$('#linkRows .link-edit-row')){const label=row.querySelector('.link-label-input').value.trim(),url=row.querySelector('.link-url-input').value.trim(),icon=row.querySelector('.link-icon-input').value.trim();if(!label&&!url)continue;if(!label||!url)throw new Error('أكمل اسم الرابط وعنوانه، أو احذف الصف الفارغ.');const valid=safeUrl(url);if(!valid)throw new Error(`عنوان الرابط غير صالح: ${label}. استخدم https:// أو mailto: أو tel:.`);const detected=resolveLinkIcon(valid,label,icon);normalizedLinks.push({id:row.dataset.linkId||null,label,url:valid,icon:icon||detected.key,sort_order:normalizedLinks.length,is_enabled:true,profile_id:profileId});}
     let avatarUrl=currentAvatar;
     if($('#avatarFile').files[0]) avatarUrl=await uploadAvatar(); else if(val('avatarUrl').trim()){avatarUrl=safeUrl(val('avatarUrl'));if(!avatarUrl)throw new Error('رابط الصورة غير صالح.');} else avatarUrl='';
     const row={id:profileId,username:slug,display_name:name,subtitle:val('subtitle').trim(),bio:val('bio').trim(),avatar_url:avatarUrl,theme:currentTheme(),is_published:checked('publishToggle')};
@@ -110,7 +115,7 @@ async function saveAll(){
     const {error:xErr}=await supabase.from('profile_extras').upsert(x,{onConflict:'profile_id'});if(xErr)throw xErr;
     const keepIds=normalizedLinks.filter(l=>l.id).map(l=>l.id);
     for(const old of savedLinks){if(!keepIds.includes(old.id)){const {error}=await supabase.from('profile_links').delete().eq('id',old.id).eq('profile_id',profileId);if(error)throw error;}}
-    const toSave=normalizedLinks.map(l=>{const v={profile_id:profileId,label:l.label,url:l.url,icon:l.icon,sort_order:l.sort_order,is_enabled:true};if(l.id)v.id=l.id;return v;});
+    const toSave=normalizedLinks.map(l=>{const v={profile_id:profileId,label:l.label,url:l.url,icon:l.icon||'link',sort_order:l.sort_order,is_enabled:true};if(l.id)v.id=l.id;return v;});
     if(toSave.length){const {error}=await supabase.from('profile_links').upsert(toSave,{onConflict:'id'});if(error)throw error;}
     else {const {error}=await supabase.from('profile_links').delete().eq('profile_id',profileId);if(error)throw error;}
     currentAvatar=avatarUrl;selectedFile=null;$('#avatarFile').value='';setVal('avatarUrl',avatarUrl);const temp=$('#previewAvatar')?.dataset?.tempUrl;if(temp)URL.revokeObjectURL(temp);if($('#previewAvatar'))delete $('#previewAvatar').dataset.tempUrl;
@@ -150,7 +155,7 @@ $('#avatarFile').addEventListener('change',()=>{selectedFile=$('#avatarFile').fi
 $('#avatarUrl').addEventListener('input',()=>{selectedFile=null;$('#avatarFile').value='';updatePreview();});
 $('#username').addEventListener('input',()=>{const pos=$('#username').selectionStart;setVal('username',cleanSlug(val('username')));try{$('#username').setSelectionRange(pos,pos);}catch{}updateShare();});
 $('#linkRows').addEventListener('input',updatePreview);$('#linkRows').addEventListener('click',e=>{const b=e.target.closest('.remove-link');if(!b)return;b.closest('.link-edit-row').remove();$('#emptyLinks').hidden=$$('#linkRows .link-edit-row').length>0;updatePreview();});
-$('#addLinkBtn').addEventListener('click',()=>addLinkRow({label:'',url:'',icon:'↗'}));
+$('#addLinkBtn').addEventListener('click',()=>addLinkRow({label:'',url:'',icon:''}));
 $('#presetGrid').addEventListener('click',e=>{const b=e.target.closest('[data-preset]');if(b)setPreset(b.dataset.preset);});
 $('#publishToggle').addEventListener('change',()=>syncPublish(checked('publishToggle')));$('#publishBottom').addEventListener('change',()=>syncPublish(checked('publishBottom')));
 $('#saveTopBtn').addEventListener('click',saveAll);$('#saveBottomBtn').addEventListener('click',saveAll);
