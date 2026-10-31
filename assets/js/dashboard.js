@@ -16,6 +16,11 @@ const safeHref = value => {
   catch { return /^(mailto:|tel:)/i.test(String(value || '')) ? String(value) : ''; }
 };
 
+// Admin's own account is excluded from member-facing lists and statistics.
+function getMemberDirectory() {
+  return directory.filter(user => user.id !== me?.id);
+}
+
 async function loadAll() {
   const [p, d, x, t, l, m] = await Promise.all([
     supabase.from('profiles').select('*').order('created_at', { ascending: false }),
@@ -26,8 +31,9 @@ async function loadAll() {
     supabase.from('admin_messages').select('*').order('created_at', { ascending: false }).limit(30),
   ]);
   for (const r of [p, d, x, t, l, m]) if (r.error) throw r.error;
-  profiles = p.data || [];
-  directory = d.data || [];
+  // Keep the currently signed-in admin out of member-management views.
+  profiles = (p.data || []).filter(profile => profile.id !== me?.id);
+  directory = (d.data || []).filter(user => user.id !== me?.id);
   extras = x.data || [];
   tickets = t.data || [];
   profileLinks = l.data || [];
@@ -40,18 +46,21 @@ async function loadAll() {
 }
 
 function renderStats() {
-  $('#statUsers').textContent = directory.length;
-  $('#statPublished').textContent = profiles.filter(p => p.is_published).length;
-  $('#statDrafts').textContent = profiles.filter(p => !p.is_published).length;
+  const members = getMemberDirectory();
+  const memberIds = new Set(members.map(d => d.id));
+  const memberProfiles = profiles.filter(p => memberIds.has(p.id));
+  $('#statUsers').textContent = members.length;
+  $('#statPublished').textContent = memberProfiles.filter(p => p.is_published).length;
+  $('#statDrafts').textContent = memberProfiles.filter(p => !p.is_published).length;
   $('#statTickets').textContent = tickets.filter(t => t.status !== 'closed').length;
-  $('#statBanned').textContent = directory.filter(d => d.is_banned).length;
+  $('#statBanned').textContent = members.filter(d => d.is_banned).length;
   $('#statUnreadMessages').textContent = adminMessages.filter(m => !m.read_at).length;
 }
 
 function renderUsers() {
   const q = $('#userSearch').value.trim().toLowerCase();
   const filter = $('#statusFilter').value;
-  const rows = directory.map(d => ({ d, p: profiles.find(p => p.id === d.id) || null }));
+  const rows = getMemberDirectory().map(d => ({ d, p: profiles.find(p => p.id === d.id) || null }));
   const filtered = rows.filter(({ d, p }) => {
     const status = d.is_banned ? 'banned' : p?.is_published ? 'published' : 'draft';
     if (filter !== 'all' && filter !== status) return false;
@@ -100,12 +109,13 @@ function renderTickets() {
 function renderMessageRecipients() {
   const select = $('#messageUser');
   const previous = select.value;
-  select.innerHTML = '<option value="">اختر العضو المستلم</option>' + directory.map(d => {
+  const members = getMemberDirectory();
+  select.innerHTML = '<option value="">اختر العضو المستلم</option>' + members.map(d => {
     const p = profiles.find(p => p.id === d.id);
     const label = `${p?.display_name || d.email} — ${d.email}`;
     return `<option value="${esc(d.id)}">${esc(label)}</option>`;
   }).join('');
-  if (directory.some(d => d.id === previous)) select.value = previous;
+  if (members.some(d => d.id === previous)) select.value = previous;
 }
 
 function renderAdminMessages() {
@@ -153,6 +163,10 @@ function focusMessageForm(userId) {
 }
 
 async function adminAction(action, id, button) {
+  if (id === me?.id) {
+    toast('لا يمكنك تنفيذ إجراءات إدارية على حساب المدير الحالي.', 'error');
+    return;
+  }
   const p = profiles.find(x => x.id === id);
   const d = directory.find(x => x.id === id);
   if (action === 'details') { showDetails(id); return; }
@@ -216,7 +230,7 @@ async function sendDirectMessage(event) {
   const userId = $('#messageUser').value;
   const subject = $('#messageSubject').value.trim();
   const message = $('#messageBody').value.trim();
-  if (!userId || subject.length < 2 || message.length < 2) { toast('اختر عضوًا واكتب عنوان الرسالة ومحتواها.', 'error'); return; }
+  if (!userId || userId === me?.id || subject.length < 2 || message.length < 2) { toast('اختر عضوًا واكتب عنوان الرسالة ومحتواها.', 'error'); return; }
   const button = event.submitter || $('#sendAdminMessage');
   button.disabled = true;
   try {
