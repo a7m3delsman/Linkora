@@ -9,7 +9,9 @@ const status = $('#authStatus');
 const submit = $('#submitAuth');
 const emailInput = $('#email');
 const passwordInput = $('#password');
-let mode = new URLSearchParams(location.search).get('mode') || 'login';
+const initialParams = new URLSearchParams(location.search);
+const initialHash = new URLSearchParams(location.hash.replace(/^#/, ''));
+let mode = initialParams.get('mode') || (initialHash.get('type') === 'recovery' ? 'reset' : 'login');
 if (!['login', 'signup', 'forgot', 'reset', 'confirm'].includes(mode)) mode = 'login';
 
 const fields = {
@@ -106,6 +108,9 @@ $('#forgotLink').addEventListener('click', event => {
 
 showConfigWarning();
 setMode(mode, false);
+if (initialParams.get('blocked') === '1') {
+  setStatus('هذا الحساب محظور من استخدام Linkora. تواصل مع إدارة المنصة لمراجعة القرار.', 'error');
+}
 
 if (mode === 'confirm') {
   setStatus('لو ضغطت على رابط التأكيد في رسالة البريد، المفروض يتأكد الحساب تلقائيًا. لو تأكد بنجاح، اضغط «تسجيل الدخول».', 'success');
@@ -165,7 +170,9 @@ if (isConfigured) {
   if (mode === 'reset') {
     const { data, error } = await supabase.auth.getSession();
     if (error || !data?.session) {
-      setStatus('افتح رابط استعادة كلمة المرور الذي وصلك على البريد الإلكتروني أولًا، ثم جرّب مرة أخرى.', 'error');
+      setStatus('لم يتم قبول رابط الاستعادة. افتح أحدث رسالة استعادة، وتأكد أن Site URL و Redirect URLs في Supabase يشيران إلى موقع GitHub Pages وليس localhost.', 'error');
+    } else {
+      setStatus('تم فتح رابط الاستعادة بنجاح. اكتب كلمة المرور الجديدة.', 'success');
     }
   }
 }
@@ -214,7 +221,7 @@ form.addEventListener('submit', async event => {
       return;
     } else if (mode === 'forgot') {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: appUrl('auth.html?mode=reset')
+        redirectTo: new URL('auth.html?mode=reset', new URL('./', window.location.href)).href
       });
       if (error) throw error;
       setStatus('لو فيه حساب مسجل بالبريد ده، هتوصلك رسالة لاستعادة كلمة المرور. راجع Spam كمان.', 'success');

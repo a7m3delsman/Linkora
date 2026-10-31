@@ -1,0 +1,4 @@
+[functions.linkora-admin]
+# The function validates the caller's bearer token with Auth inside the handler,
+# then checks platform_admins before performing any service-role operation.
+verify_jwt = false

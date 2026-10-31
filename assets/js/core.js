@@ -25,6 +25,15 @@ export async function requireUser(redirect = 'auth.html') {
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error) throw error;
   if (!session?.user) { window.location.href = redirect; throw new Error('Sign in required.'); }
+  // Banned accounts are stopped at the application boundary as well as in Auth.
+  // The RPC is added by supabase/upgrade_admin.sql; tolerate its absence during staged upgrades.
+  const { data: banned, error: banCheckError } = await supabase.rpc('is_linkora_account_banned');
+  if (!banCheckError && banned === true) {
+    await supabase.auth.signOut();
+    window.location.href = 'auth.html?blocked=1';
+    throw new Error('هذا الحساب محظور من استخدام Linkora. تواصل مع إدارة المنصة.');
+  }
+  if (banCheckError && banCheckError.code !== 'PGRST202' && banCheckError.code !== '42883') throw banCheckError;
   return session.user;
 }
 export async function isAdmin(userId) {

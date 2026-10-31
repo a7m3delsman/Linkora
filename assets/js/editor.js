@@ -73,7 +73,7 @@ async function loadPage(){
   profileId=requestedId||user.id;
   const supportMode=profileId!==user.id;
   $('#currentEmail').textContent=(user.email||'')+(supportMode?' · وضع الدعم الفني':'');
-  if(supportMode){$('#editorHeading').textContent='تعديل صفحة عضو';$('.page-heading p').textContent='وضع الدعم الفني: التعديلات ستظهر في صفحة العضو بعد الحفظ.';$('#supportForm').closest('.panel').hidden=true;}
+  if(supportMode){$('#editorHeading').textContent='تعديل صفحة عضو';$('.page-heading p').textContent='وضع الدعم الفني: التعديلات ستظهر في صفحة العضو بعد الحفظ.';$('#supportForm').closest('.panel').hidden=true;$('#adminMessagesPanel').hidden=true;}
   const {data:p,error:pErr}=await supabase.from('profiles').select('*').eq('id',profileId).maybeSingle();if(pErr)throw pErr;
   if(!p){toast('لم يتم العثور على ملفك. شغّل schema.sql في Supabase.','error');return;}
   profile=p;
@@ -84,7 +84,7 @@ async function loadPage(){
   ['showBirthDate','showLocation','showHeight','showWeight','showOccupation'].forEach(k=>$('#'+k).checked=!!x?.[({showBirthDate:'show_birth_date',showLocation:'show_location',showHeight:'show_height',showWeight:'show_weight',showOccupation:'show_occupation'})[k]]);
   const t={...presets.aurora,...(p.theme||{})};['accent','accent2','background','mode','animation','card'].forEach(k=>setVal(k,t[k]||presets.aurora[k]));syncPublish(!!p.is_published);renderLinkRows(savedLinks);updatePreview();
   if(p.theme?.accent) $$('[data-preset]').forEach(b=>b.classList.remove('active'));
-  $('#saveTopBtn').disabled=false; await loadTickets();
+  $('#saveTopBtn').disabled=false; await loadTickets(); if(!supportMode) await loadAdminMessages();
 }
 async function uploadAvatar(){
   const file=$('#avatarFile').files[0];if(!file)return safeUrl(val('avatarUrl'))||'';
@@ -129,6 +129,20 @@ async function loadTickets(){
 }
 async function submitTicket(e){e.preventDefault();const subject=val('ticketSubject').trim(),message=val('ticketMessage').trim();if(subject.length<3||message.length<5){toast('اكتب عنوانًا وتفاصيل أوضح شوية.','error');return;}const b=e.submitter;b.disabled=true;try{const {error}=await supabase.from('support_tickets').insert({user_id:user.id,subject,message});if(error)throw error;setVal('ticketSubject','');setVal('ticketMessage','');toast('تم إرسال طلب الدعم.','success');await loadTickets();}catch(err){toast(err.message||'تعذر إرسال الطلب.','error');}finally{b.disabled=false;}}
 
+async function loadAdminMessages(){
+  const host=$('#myAdminMessages');
+  const {data,error}=await supabase.from('admin_messages').select('id,subject,message,created_at,read_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(30);
+  if(error){host.innerHTML='<p class="muted small">تعذر تحميل رسائل الإدارة. تأكد من تشغيل supabase/upgrade_admin.sql.</p>';return;}
+  $('#adminMessageCount').textContent=String((data||[]).filter(m=>!m.read_at).length);
+  if(!data?.length){host.innerHTML='<p class="muted small">لا توجد رسائل من الإدارة حاليًا.</p>';return;}
+  host.innerHTML=data.map(m=>`<article class="ticket-card"><div class="ticket-top"><b>${esc(m.subject)}</b><span class="status-pill ${m.read_at?'closed':'open'}">${m.read_at?'مقروءة':'جديدة'}</span></div><p>${esc(m.message)}</p><div class="toolbar" style="margin:8px 0 0"><small class="muted">${formatDate(m.created_at)}</small>${m.read_at?'':`<button type="button" class="btn btn-small" data-read-message="${esc(m.id)}">تحديد كمقروءة</button>`}</div></article>`).join('');
+}
+async function markAdminMessageRead(button){
+  const id=button.dataset.readMessage;button.disabled=true;
+  try{const {data,error}=await supabase.rpc('mark_admin_message_read',{p_message_id:id});if(error)throw error;if(!data)throw new Error('لم يتم العثور على الرسالة.');await loadAdminMessages();}
+  catch(error){toast(error.message||'تعذر تحديث الرسالة.','error');button.disabled=false;}
+}
+
 // Live preview + controls
 $('#profileForm').addEventListener('input',updatePreview);
 ['birthDate','location','heightCm','weightKg','occupation','showBirthDate','showLocation','showHeight','showWeight','showOccupation','accent','accent2','background','mode','animation','card'].forEach(id=>$('#'+id).addEventListener('input',updatePreview));
@@ -142,6 +156,6 @@ $('#publishToggle').addEventListener('change',()=>syncPublish(checked('publishTo
 $('#saveTopBtn').addEventListener('click',saveAll);$('#saveBottomBtn').addEventListener('click',saveAll);
 $('#copyLinkBtn').addEventListener('click',async()=>{const link=shareUrl();if(!link){toast('اختَر اسم مستخدم صالح واحفظه أولًا.','error');return;}try{await navigator.clipboard.writeText(link);toast('تم نسخ رابط صفحتك.','success');}catch{ $('#shareUrl').select();toast('انسخ الرابط المحدد يدويًا.');}});
 $('#qrBtn').addEventListener('click',()=>{const link=shareUrl();if(!link){toast('اختَر اسم مستخدم صالح واحفظه أولًا.','error');return;}if(!checked('publishToggle')){toast('انشر صفحتك أولًا حتى يستطيع الآخرون فتحها.','error');return;}if(!window.QRCode){toast('تعذر تحميل مولّد QR. تحقق من اتصال الإنترنت.','error');return;}const panel=$('#qrPanel');panel.hidden=false;$('#qrCode').innerHTML='';new QRCode($('#qrCode'),{text:link,width:180,height:180,colorDark:'#171a2b',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});});
-$('#supportForm').addEventListener('submit',submitTicket);$('#signOutBtn').addEventListener('click',signOut);
+$('#supportForm').addEventListener('submit',submitTicket);$('#myAdminMessages').addEventListener('click',e=>{const b=e.target.closest('[data-read-message]');if(b)markAdminMessageRead(b);});$('#signOutBtn').addEventListener('click',signOut);
 showConfigWarning();
 if(isConfigured){try{await loadPage();}catch(err){if(!String(err.message||'').includes('Sign in required'))toast(err.message||'تعذر تحميل المحرر. راجع إعداد Supabase.','error');}}
