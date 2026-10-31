@@ -14,3 +14,32 @@
 @media(max-width:650px){.nav-actions #currentEmail,.nav-actions #adminEmail{display:none}.nav-actions #signOutBtn{display:inline-flex!important;white-space:nowrap;flex:0 0 auto;padding:8px 10px;font-size:.78rem}.nav:has(#signOutBtn){gap:8px}.nav:has(#signOutBtn) .brand{flex:1;min-width:0}.nav:has(#signOutBtn) .nav-actions{margin-inline-start:auto}}
 
 .status-pill.banned{background:rgba(255,110,130,.14);color:#ff9aaa}.btn-danger{border-color:rgba(255,110,130,.28)!important;color:#ff9aaa!important}.dashboard-stats{grid-template-columns:repeat(6,minmax(0,1fr))}@media(max-width:980px){.dashboard-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:650px){.dashboard-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.table-actions{min-width:280px}.table-actions .btn{min-height:35px}}
+
+
+/* Linkora social icons: local SVGs, brand-aware colors, and responsive editor controls. */
+.link-icon{color:var(--link-brand,var(--pub-accent,#8a7cff));background:color-mix(in srgb,var(--link-brand,var(--pub-accent,#8a7cff)) 16%,transparent);border:1px solid color-mix(in srgb,var(--link-brand,var(--pub-accent,#8a7cff)) 25%,transparent)}
+.link-icon svg{display:block;width:20px;height:20px;fill:currentColor}
+.public-link .link-icon{width:38px;height:38px;flex:0 0 38px;border-radius:12px;display:grid;place-items:center}
+.public-link .link-icon svg{width:21px;height:21px}
+.link-icon-custom{font-size:1rem;font-weight:800;line-height:1}
+.link-edit-row{grid-template-columns:minmax(110px,1fr) minmax(150px,1.5fr) 132px 42px}
+.link-icon-control{display:flex;align-items:center;gap:7px;min-width:0}
+.link-icon-control .link-icon-input{flex:1;width:100%;min-width:0;padding-inline:8px;text-align:center}
+.link-icon-editor{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:10px}
+.link-icon-editor svg{width:19px;height:19px}
+.preview-link-main{display:flex;align-items:center;gap:10px;min-width:0}
+.preview-link-main>span:last-child{overflow-wrap:anywhere}
+.link-icon-preview{width:29px;height:29px;flex:0 0 29px;display:grid;place-items:center;border-radius:9px}
+.link-icon-preview svg{width:17px;height:17px}
+.preview-external{color:var(--paccent2)}
+.public-link{animation:link-rise .5s cubic-bezier(.2,.75,.25,1) both}
+.public-link:nth-child(2){animation-delay:.05s}.public-link:nth-child(3){animation-delay:.1s}.public-link:nth-child(4){animation-delay:.15s}.public-link:nth-child(5){animation-delay:.2s}.public-link:nth-child(6){animation-delay:.25s}.public-link:nth-child(n+7){animation-delay:.3s}
+@keyframes link-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes avatar-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 8px color-mix(in srgb,var(--pub-accent,#8a7cff) 10%,transparent),0 0 28px color-mix(in srgb,var(--pub-accent,#8a7cff) 20%,transparent)}50%{transform:scale(1.045);box-shadow:0 0 0 13px color-mix(in srgb,var(--pub-accent,#8a7cff) 9%,transparent),0 0 48px color-mix(in srgb,var(--pub-accent2,#62d9cf) 38%,transparent)}}
+.public-profile.anim-pulse .public-avatar{animation:avatar-pulse 3.2s ease-in-out infinite}
+.preview-profile.anim-pulse .preview-avatar{animation:preview-avatar-pulse 3.2s ease-in-out infinite}
+@keyframes preview-avatar-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 8px color-mix(in srgb,var(--paccent) 10%,transparent),0 0 25px color-mix(in srgb,var(--paccent) 20%,transparent)}50%{transform:scale(1.045);box-shadow:0 0 0 13px color-mix(in srgb,var(--paccent) 9%,transparent),0 0 44px color-mix(in srgb,var(--paccent2) 38%,transparent)}}
+@media(max-width:650px){.link-edit-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.link-edit-row .link-label-input{grid-column:1;grid-row:1}.link-edit-row .link-icon-control{grid-column:2;grid-row:1}.link-edit-row .link-url-input{grid-column:1/-1;grid-row:2}.link-edit-row .remove-link{grid-column:2;grid-row:3;justify-self:end}.link-icon-control .link-icon-input{grid-column:auto;width:100%}}
+@media(prefers-reduced-motion:reduce){.public-link{animation:none!important}.public-profile.anim-pulse .public-avatar,.preview-profile.anim-pulse .preview-avatar{animation:none!important}}
+
+.link-icon-tiktok,.link-icon-x,.link-icon-threads{background:rgba(255,255,255,.94)!important;color:#111!important;border-color:rgba(255,255,255,.88)!important}
