@@ -43,3 +43,64 @@
 @media(prefers-reduced-motion:reduce){.public-link{animation:none!important}.public-profile.anim-pulse .public-avatar,.preview-profile.anim-pulse .preview-avatar{animation:none!important}}
 
 .link-icon-tiktok,.link-icon-x,.link-icon-threads{background:rgba(255,255,255,.94)!important;color:#111!important;border-color:rgba(255,255,255,.88)!important}
+
+/* Linkora mobile navigation and publishing controls fix */
+@media (max-width:650px){
+  .topbar .nav{
+    min-height:auto;
+    padding-block:10px;
+    flex-wrap:wrap;
+    column-gap:8px;
+    row-gap:7px;
+  }
+  .topbar .nav .brand{order:1;flex:1 1 auto;min-width:0}
+  .topbar .nav .nav-actions{order:2;flex:0 0 auto}
+  .topbar .nav .nav-links{
+    display:flex!important;
+    order:3;
+    flex:1 0 100%;
+    width:100%;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:8px 18px;
+    padding:9px 2px 2px;
+    border-top:1px solid var(--line);
+    font-size:.88rem;
+  }
+  .topbar .nav .nav-links a{display:inline-flex;align-items:center;min-height:32px}
+
+  /* Keep preview and save actions visible in the editor heading. */
+  .page-heading>.nav-actions{
+    display:flex!important;
+    width:100%;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .page-heading>.nav-actions>.btn{
+    display:inline-flex!important;
+    flex:1 1 135px;
+    min-width:0;
+    white-space:normal;
+    text-align:center;
+  }
+
+  /* Do not hide the copy, QR and open-page controls on small screens. */
+  .panel .nav-actions{
+    display:flex!important;
+    width:100%;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .panel .nav-actions>.btn,
+  .panel .nav-actions>a.btn{
+    display:inline-flex!important;
+    flex:1 1 125px;
+    min-width:0;
+    white-space:normal;
+    text-align:center;
+    padding:10px 9px;
+  }
+  #qrPanel{width:100%;overflow:hidden}
+  #qrCode{max-width:100%;margin-inline:auto}
+  #qrCode canvas,#qrCode img{max-width:100%;height:auto!important;margin-inline:auto}
+}
