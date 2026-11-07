@@ -9,13 +9,13 @@ const presets = {
   mono:{accent:'#b4c0d8',accent2:'#f0f3ff',background:'#171a22',mode:'dark',animation:'glow',card:'outline'},
   rose:{accent:'#d18aff',accent2:'#ff9dbb',background:'#1a1221',mode:'dark',animation:'aurora',card:'glass'}
 };
-let user = null, profileId = null, profile = null, extras = {}, savedLinks = [], selectedFile = null, currentAvatar = '', currentCover = '', selectedCoverFile = null, admin = false, saving = false;
+let user = null, profileId = null, profile = null, extras = {}, savedLinks = [], selectedFile = null, currentAvatar = '', currentCover = '', selectedCoverFile = null, selectedPageBackgroundFile = null, selectedFrameBackgroundFile = null, pageBackgroundPreviewUrl = '', frameBackgroundPreviewUrl = '', admin = false, saving = false;
 const val = id => $(`#${id}`).value;
 const checked = id => $(`#${id}`).checked;
 const setVal = (id, v='') => { $(`#${id}`).value = v ?? ''; };
 const fields = ['displayName','username','subtitle','bio','avatarUrl','birthDate','location','heightCm','weightKg','occupation','showBirthDate','showLocation','showHeight','showWeight','showOccupation','accent','accent2','background','mode','animation','card','publishToggle'];
 
-function currentTheme(){ return { accent:val('accent')||presets.aurora.accent, accent2:val('accent2')||presets.aurora.accent2, background:val('background')||presets.aurora.background, mode:val('mode'), animation:val('animation'), card:val('card'), linkCardStyle:val('linkCardStyle')||'glass', linkAnimation:val('linkAnimation')||'lift' }; }
+function currentTheme(){ return { accent:val('accent')||presets.aurora.accent, accent2:val('accent2')||presets.aurora.accent2, background:val('background')||presets.aurora.background, mode:val('mode'), animation:val('animation'), card:val('card'), linkCardStyle:val('linkCardStyle')||'glass', linkAnimation:val('linkAnimation')||'lift', pageBackgroundUrl:val('pageBackgroundUrl').trim(), frameBackgroundUrl:val('frameBackgroundUrl').trim() }; }
 function shareUrl(){ const slug=cleanSlug(val('username')); return slug ? `${new URL('p.html',location.href).href}?u=${encodeURIComponent(slug)}` : ''; }
 function updateShare(){ const url=shareUrl(); $('#shareUrl').value=url; $('#openPublicBtn').href=url || 'p.html'; $('#openPageLink').href=url || 'p.html'; }
 function syncPublish(v){ $('#publishToggle').checked=v; $('#publishBottom').checked=v; }
@@ -28,6 +28,13 @@ function updatePreview(){
   p.style.setProperty('--pbg', t.card==='solid' ? t.background : (t.mode==='light' ? '#f8f8ff' : t.background));
   p.style.setProperty('--ptxt',t.mode==='light'?'#22283b':'#f4f5ff');
   p.style.setProperty('--paccent',t.accent);p.style.setProperty('--paccent2',t.accent2);
+  const pageBg = selectedPageBackgroundFile ? pageBackgroundPreviewUrl : safeUrl(val('pageBackgroundUrl'));
+  const frameBg = selectedFrameBackgroundFile ? frameBackgroundPreviewUrl : safeUrl(val('frameBackgroundUrl'));
+  const stage = $('.preview-stage');
+  stage.style.backgroundImage = pageBg ? `linear-gradient(rgba(5,8,17,.28),rgba(5,8,17,.28)),url("${pageBg}")` : '';
+  stage.style.backgroundSize = 'cover'; stage.style.backgroundPosition = 'center';
+  p.style.setProperty('--preview-card-image', frameBg ? `url("${frameBg}")` : 'none');
+  p.style.setProperty('--preview-card-overlay', frameBg ? (t.mode==='light'?'rgba(255,255,255,.36)':'rgba(7,10,18,.42)') : 'transparent');
   p.classList.toggle('no-anim',t.animation==='none');p.classList.toggle('card-outline',t.card==='outline');
   p.classList.remove('anim-aurora','anim-float','anim-glow','anim-pulse','anim-none');p.classList.add(`anim-${t.animation||'aurora'}`);
   if(t.animation==='float') p.style.setProperty('--angle','0deg');
@@ -100,7 +107,7 @@ async function loadPage(){
   setVal('displayName',p.display_name);setVal('username',p.username);setVal('subtitle',p.subtitle);setVal('bio',p.bio);currentAvatar=p.avatar_url||'';setVal('avatarUrl',currentAvatar);setVal('coverUrl',currentCover);
   setVal('birthDate',x?.birth_date||'');setVal('location',x?.location||'');setVal('heightCm',x?.height_cm??'');setVal('weightKg',x?.weight_kg??'');setVal('occupation',x?.occupation||'');
   ['showBirthDate','showLocation','showHeight','showWeight','showOccupation'].forEach(k=>$('#'+k).checked=!!x?.[({showBirthDate:'show_birth_date',showLocation:'show_location',showHeight:'show_height',showWeight:'show_weight',showOccupation:'show_occupation'})[k]]);
-  const t={...presets.aurora,...(p.theme||{})};['accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation'].forEach(k=>setVal(k,t[k]||({linkCardStyle:'glass',linkAnimation:'lift'}[k]||presets.aurora[k]||'')));syncPublish(!!p.is_published);renderLinkRows(savedLinks);updatePreview();
+  const t={...presets.aurora,...(p.theme||{})};['accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation'].forEach(k=>setVal(k,t[k]||({linkCardStyle:'glass',linkAnimation:'lift'}[k]||presets.aurora[k]||'')));setVal('pageBackgroundUrl',t.pageBackgroundUrl||'');setVal('frameBackgroundUrl',t.frameBackgroundUrl||'');syncPublish(!!p.is_published);renderLinkRows(savedLinks);updatePreview();
   if(p.theme?.accent) $$('[data-preset]').forEach(b=>b.classList.remove('active'));
   $('#saveTopBtn').disabled=false; await loadTickets(); if(!supportMode) await loadAdminMessages(); if(!supportMode) await loadAnalytics();
 }
@@ -120,6 +127,18 @@ async function uploadCover(){
   const {error}=await supabase.storage.from('linkora-avatars').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(error)throw error;
   const {data}=supabase.storage.from('linkora-avatars').getPublicUrl(path);return data.publicUrl;
 }
+async function uploadThemeImage(file, prefix){
+  if(!file)return '';
+  if(file.size>5*1024*1024)throw new Error('حجم صورة الخلفية أكبر من 5 ميجابايت.');
+  if(!/^image\/(jpeg|png|webp|gif)$/.test(file.type))throw new Error('نوع صورة الخلفية غير مدعوم. استخدم JPG أو PNG أو WEBP أو GIF.');
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const path=`${profileId}/${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext||'jpg'}`;
+  const {error}=await supabase.storage.from('linkora-avatars').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});
+  if(error)throw error;
+  const {data}=supabase.storage.from('linkora-avatars').getPublicUrl(path);
+  return data.publicUrl;
+}
+function clearPreviewObjectUrl(url){if(url){try{URL.revokeObjectURL(url);}catch{}}}
 async function saveAll(){
   if(saving)return;saving=true;const buttons=[$('#saveTopBtn'),$('#saveBottomBtn')];buttons.forEach(b=>{b.disabled=true;b.textContent='جارٍ الحفظ…';});
   try{
@@ -132,7 +151,14 @@ async function saveAll(){
     if($('#avatarFile').files[0]) avatarUrl=await uploadAvatar(); else if(val('avatarUrl').trim()){avatarUrl=safeUrl(val('avatarUrl'));if(!avatarUrl)throw new Error('رابط الصورة غير صالح.');} else avatarUrl='';
     let coverUrl=currentCover;
     if(selectedCoverFile || $('#coverFile').files[0]) coverUrl=await uploadCover(); else if(val('coverUrl').trim()){coverUrl=safeUrl(val('coverUrl'));if(!coverUrl)throw new Error('رابط صورة الغلاف غير صالح.');} else coverUrl='';
-    const row={id:profileId,username:slug,display_name:name,subtitle:val('subtitle').trim(),bio:val('bio').trim(),avatar_url:avatarUrl,cover_url:coverUrl,theme:currentTheme(),is_published:checked('publishToggle')};
+    const theme=currentTheme();
+    if(val('pageBackgroundUrl').trim() && !safeUrl(val('pageBackgroundUrl')))throw new Error('رابط صورة الخلفية الخارجية غير صالح. استخدم رابطًا يبدأ بـ https:// أو http://.');
+    if(val('frameBackgroundUrl').trim() && !safeUrl(val('frameBackgroundUrl')))throw new Error('رابط صورة خلفية الكارت غير صالح. استخدم رابطًا يبدأ بـ https:// أو http://.');
+    if(selectedPageBackgroundFile)theme.pageBackgroundUrl=await uploadThemeImage(selectedPageBackgroundFile,'page-background');
+    else theme.pageBackgroundUrl=safeUrl(val('pageBackgroundUrl'))||'';
+    if(selectedFrameBackgroundFile)theme.frameBackgroundUrl=await uploadThemeImage(selectedFrameBackgroundFile,'frame-background');
+    else theme.frameBackgroundUrl=safeUrl(val('frameBackgroundUrl'))||'';
+    const row={id:profileId,username:slug,display_name:name,subtitle:val('subtitle').trim(),bio:val('bio').trim(),avatar_url:avatarUrl,cover_url:coverUrl,theme,is_published:checked('publishToggle')};
     const {error:pErr}=await supabase.from('profiles').upsert(row,{onConflict:'id'});if(pErr)throw pErr;
     const x={profile_id:profileId,birth_date:val('birthDate')||null,show_birth_date:checked('showBirthDate'),height_cm:val('heightCm')?Number(val('heightCm')):null,show_height:checked('showHeight'),weight_kg:val('weightKg')?Number(val('weightKg')):null,show_weight:checked('showWeight'),location:val('location').trim(),show_location:checked('showLocation'),occupation:val('occupation').trim(),show_occupation:checked('showOccupation')};
     const {error:xErr}=await supabase.from('profile_extras').upsert(x,{onConflict:'profile_id'});if(xErr)throw xErr;
@@ -141,7 +167,11 @@ async function saveAll(){
     const toSave=normalizedLinks.map(l=>{const v={profile_id:profileId,label:l.label,url:l.url,icon:l.icon||'link',sort_order:l.sort_order,is_enabled:true,is_featured:!!l.is_featured,show_as_card:l.show_as_card!==false,show_as_icon:!!l.show_as_icon};if(l.id)v.id=l.id;return v;});
     if(toSave.length){const {error}=await supabase.from('profile_links').upsert(toSave,{onConflict:'id'});if(error)throw error;}
     else {const {error}=await supabase.from('profile_links').delete().eq('profile_id',profileId);if(error)throw error;}
-    currentAvatar=avatarUrl;selectedFile=null;$('#avatarFile').value='';setVal('avatarUrl',avatarUrl);currentCover=coverUrl;selectedCoverFile=null;$('#coverFile').value='';setVal('coverUrl',coverUrl);const temp=$('#previewAvatar')?.dataset?.tempUrl;if(temp)URL.revokeObjectURL(temp);if($('#previewAvatar'))delete $('#previewAvatar').dataset.tempUrl;
+    currentAvatar=avatarUrl;selectedFile=null;$('#avatarFile').value='';setVal('avatarUrl',avatarUrl);currentCover=coverUrl;selectedCoverFile=null;$('#coverFile').value='';setVal('coverUrl',coverUrl);
+    setVal('pageBackgroundUrl',theme.pageBackgroundUrl||'');setVal('frameBackgroundUrl',theme.frameBackgroundUrl||'');const coverTemp=$('#previewCover')?.dataset?.tempUrl;if(coverTemp){clearPreviewObjectUrl(coverTemp);delete $('#previewCover').dataset.tempUrl;}
+    selectedPageBackgroundFile=null;selectedFrameBackgroundFile=null;$('#pageBackgroundFile').value='';$('#frameBackgroundFile').value='';
+    clearPreviewObjectUrl(pageBackgroundPreviewUrl);clearPreviewObjectUrl(frameBackgroundPreviewUrl);pageBackgroundPreviewUrl='';frameBackgroundPreviewUrl='';
+    const temp=$('#previewAvatar')?.dataset?.tempUrl;if(temp)URL.revokeObjectURL(temp);if($('#previewAvatar'))delete $('#previewAvatar').dataset.tempUrl;
     const {data:updatedLinks,error:reloadLinksErr}=await supabase.from('profile_links').select('*').eq('profile_id',profileId).order('sort_order');if(!reloadLinksErr){savedLinks=updatedLinks||[];renderLinkRows(savedLinks);}
     const {data:updated,error:uErr}=await supabase.from('profiles').select('*').eq('id',profileId).single();if(!uErr)profile=updated;
     updatePreview();toast('اتحفظت التغييرات بنجاح ✦','success');
@@ -173,11 +203,15 @@ async function markAdminMessageRead(button){
 
 // Live preview + controls
 $('#profileForm').addEventListener('input',updatePreview);
-['birthDate','location','heightCm','weightKg','occupation','showBirthDate','showLocation','showHeight','showWeight','showOccupation','accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation'].forEach(id=>$('#'+id).addEventListener('input',updatePreview));
+['birthDate','location','heightCm','weightKg','occupation','showBirthDate','showLocation','showHeight','showWeight','showOccupation','accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation','pageBackgroundUrl','frameBackgroundUrl'].forEach(id=>$('#'+id).addEventListener('input',updatePreview));
 $('#avatarFile').addEventListener('change',()=>{selectedFile=$('#avatarFile').files[0]||null;if(selectedFile){setVal('avatarUrl','');}updatePreview();});
 $('#avatarUrl').addEventListener('input',()=>{selectedFile=null;$('#avatarFile').value='';updatePreview();});
-$('#coverFile').addEventListener('change',()=>{selectedCoverFile=$('#coverFile').files[0]||null;if(selectedCoverFile)setVal('coverUrl','');updatePreview();});
+$('#coverFile').addEventListener('change',()=>{selectedCoverFile=$('#coverFile').files[0]||null;if(selectedCoverFile){setVal('coverUrl','');const cover=$('#previewCover');if(cover.dataset.tempUrl){clearPreviewObjectUrl(cover.dataset.tempUrl);delete cover.dataset.tempUrl;}}updatePreview();});
 $('#coverUrl').addEventListener('input',()=>{selectedCoverFile=null;$('#coverFile').value='';updatePreview();});
+$('#pageBackgroundFile').addEventListener('change',()=>{selectedPageBackgroundFile=$('#pageBackgroundFile').files[0]||null;clearPreviewObjectUrl(pageBackgroundPreviewUrl);pageBackgroundPreviewUrl=selectedPageBackgroundFile?URL.createObjectURL(selectedPageBackgroundFile):'';if(selectedPageBackgroundFile)setVal('pageBackgroundUrl','');updatePreview();});
+$('#frameBackgroundFile').addEventListener('change',()=>{selectedFrameBackgroundFile=$('#frameBackgroundFile').files[0]||null;clearPreviewObjectUrl(frameBackgroundPreviewUrl);frameBackgroundPreviewUrl=selectedFrameBackgroundFile?URL.createObjectURL(selectedFrameBackgroundFile):'';if(selectedFrameBackgroundFile)setVal('frameBackgroundUrl','');updatePreview();});
+$('#pageBackgroundUrl').addEventListener('input',()=>{selectedPageBackgroundFile=null;$('#pageBackgroundFile').value='';clearPreviewObjectUrl(pageBackgroundPreviewUrl);pageBackgroundPreviewUrl='';updatePreview();});
+$('#frameBackgroundUrl').addEventListener('input',()=>{selectedFrameBackgroundFile=null;$('#frameBackgroundFile').value='';clearPreviewObjectUrl(frameBackgroundPreviewUrl);frameBackgroundPreviewUrl='';updatePreview();});
 $('#username').addEventListener('input',()=>{const pos=$('#username').selectionStart;setVal('username',cleanSlug(val('username')));try{$('#username').setSelectionRange(pos,pos);}catch{}updateShare();});
 $('#linkRows').addEventListener('input',updatePreview);$('#linkRows').addEventListener('change',updatePreview);$('#linkRows').addEventListener('click',e=>{const row=e.target.closest('.link-edit-row');if(!row)return;if(e.target.closest('.remove-link')){row.remove();$('#emptyLinks').hidden=$$('#linkRows .link-edit-row').length>0;updatePreview();return;}if(e.target.closest('.move-link-up')&&row.previousElementSibling){row.parentNode.insertBefore(row,row.previousElementSibling);updatePreview();return;}if(e.target.closest('.move-link-down')&&row.nextElementSibling){row.parentNode.insertBefore(row.nextElementSibling,row);updatePreview();}});
 $('#addLinkBtn').addEventListener('click',()=>addLinkRow({label:'',url:'',icon:''}));

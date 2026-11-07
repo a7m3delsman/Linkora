@@ -137,6 +137,20 @@
     'سبب منح العضوية أو التوثيق (اختياري)':'Reason for membership or verification (optional)','إلى:':'To:','العضو المستلم':'Recipient member','الرسالة والتنبيهات الخاصة بحسابك من إدارة المنصة.':'Messages and notifications for your account from platform administration.'
   });
   const reverse = new Map();
+  Object.assign(translations, {
+    'صور الخلفية الإضافية':'Additional background images',
+    'تقدر تستخدم صورة خلف الكارت أو صورة داخل الكارت أو الاثنين معًا. كل صورة اختيارية ويمكن إزالتها بمسح رابطها.':'You can use an image behind the card, inside the card, or both. Both images are optional; clear the image URL to remove one.',
+    'صورة خلف الكارت وخلفية الصفحة (اختياري)':'Image behind the card and page background (optional)',
+    'تظهر خلف إطار البروفايل في الصفحة العامة والمعاينة المباشرة. الحد الأقصى 5 ميجابايت.':'Appears behind the profile frame on the public page and in Live Preview. Maximum size: 5 MB.',
+    'أو رابط صورة مباشر':'Or direct image URL',
+    'صورة داخل إطار الكارت (اختياري)':'Image inside the profile card (optional)',
+    'تظهر داخل خلفية إطار البروفايل خلف النصوص والروابط، مع طبقة شفافة للحفاظ على وضوح المحتوى. الحد الأقصى 5 ميجابايت.':'Appears inside the profile frame behind text and links, with a translucent overlay to keep content readable. Maximum size: 5 MB.',
+    'رابط صورة خارجي غير صالح.':'Invalid external image URL.',
+    'رابط صورة الخلفية الخارجية غير صالح. استخدم رابطًا يبدأ بـ https:// أو http://.':'The page background URL is invalid. Use a URL starting with https:// or http://.',
+    'رابط صورة خلفية الكارت غير صالح. استخدم رابطًا يبدأ بـ https:// أو http://.':'The card background URL is invalid. Use a URL starting with https:// or http://.',
+    'حجم صورة الخلفية أكبر من 5 ميجابايت.':'Background image exceeds 5 MB.',
+    'نوع صورة الخلفية غير مدعوم. استخدم JPG أو PNG أو WEBP أو GIF.':'Unsupported background image type. Use JPG, PNG, WEBP, or GIF.'
+  });
   for (const [ar,en] of Object.entries(translations)) if (!reverse.has(en)) reverse.set(en,ar);
   const langKey='linkora-language';
   const getLang=()=>localStorage.getItem(langKey)==='en'?'en':'ar';

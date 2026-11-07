@@ -18,7 +18,14 @@ async function init(){
   document.title=`${p.display_name||p.username} — Linkora`;
   const live=$('#profileLive'),card=$('#publicProfile');live.style.setProperty('--pub-bg',t.mode==='light'?'#eef0f7':t.background);live.style.setProperty('--pub-text',t.mode==='light'?'#252a41':'#f4f5ff');live.style.setProperty('--pub-accent',t.accent);live.style.setProperty('--pub-accent2',t.accent2);live.style.background=t.mode==='light'?'#eef0f7':t.background;
   const cardBg=t.card==='solid'?(t.mode==='light'?'#fff':t.background):(t.card==='outline'?'transparent':(t.mode==='light'?'rgba(255,255,255,.82)':'rgba(18,23,37,.80)'));
-  card.style.setProperty('--pub-card',cardBg);card.style.borderRadius=t.card==='outline'?'20px':'32px';if(t.card==='outline'){card.style.backdropFilter='none';card.style.boxShadow='none';}
+  card.style.setProperty('--pub-card',cardBg);card.classList.toggle('card-outline',t.card==='outline');
+  const pageBackgroundUrl=safeUrl(t.pageBackgroundUrl||'');
+  live.style.backgroundImage=pageBackgroundUrl?`linear-gradient(rgba(5,8,17,.25),rgba(5,8,17,.25)),url("${pageBackgroundUrl}")`:'';
+  live.style.backgroundSize='cover';live.style.backgroundPosition='center';
+  const frameBackgroundUrl=safeUrl(t.frameBackgroundUrl||'');
+  card.style.setProperty('--pub-card-image',frameBackgroundUrl?`url("${frameBackgroundUrl}")`:'none');
+  card.style.setProperty('--pub-card-overlay',frameBackgroundUrl?(t.mode==='light'?'rgba(255,255,255,.36)':'rgba(7,10,18,.42)'):'transparent');
+  card.style.borderRadius=t.card==='outline'?'20px':'32px';if(t.card==='outline'){card.style.backdropFilter='none';card.style.boxShadow='none';}
   card.classList.add(`anim-${t.animation||'aurora'}`);if(t.animation==='none'){card.classList.add('anim-none');live.classList.add('no-orbs');live.style.setProperty('--pub-accent','transparent');live.style.setProperty('--pub-accent2','transparent');}if(t.animation==='float')card.style.setProperty('--angle','0deg');if(t.animation==='glow'){$('#publicAvatar').style.animation='none';}
   const coverUrl=safeUrl(p.cover_url||'');if(coverUrl){$('#publicCover').style.backgroundImage=`url("${coverUrl}")` ;$('#publicCover').hidden=false;}
   const av=$('#publicAvatar');if(p.avatar_url&&safeUrl(p.avatar_url)){const img=document.createElement('img');img.id='publicAvatar';img.className='public-avatar zoomable-avatar';img.alt=`صورة ${p.display_name||p.username}`;img.src=safeUrl(p.avatar_url);img.referrerPolicy='no-referrer';img.onerror=()=>{const f=document.createElement('div');f.id='publicAvatar';f.className='public-avatar placeholder';f.textContent=initials(p.display_name||p.username);img.replaceWith(f);};img.addEventListener('click',()=>openAvatar(img.src));img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openAvatar(img.src);}});img.tabIndex=0;img.setAttribute('role','button');img.setAttribute('aria-label','تكبير صورة الملف الشخصي');av.replaceWith(img);}else{av.textContent=initials(p.display_name||p.username);}

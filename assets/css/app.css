@@ -110,3 +110,143 @@
 
 /* Keep icon-only links free of labels in both public page and preview. */
 .public-social-icons .social-icon-link .link-icon{width:100%;height:100%;display:grid;place-items:center}.public-social-icons .social-icon-link .link-icon svg{width:27px;height:27px}.public-social-icons .social-icon-link{overflow:visible}.public-body{direction:ltr!important}.public-body *{unicode-bidi:plaintext}
+
+
+/* Linkora mobile navigation: keep every navigation action reachable instead of hiding controls. */
+@media (max-width: 650px) {
+  .nav {
+    min-height: 0;
+    padding-block: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 10px;
+  }
+  .nav > .brand { order: 0; flex: 1 1 118px; min-width: 0; }
+  .nav > .nav-actions {
+    order: 1;
+    display: flex;
+    flex: 0 1 auto;
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+    margin-inline-start: 0 !important;
+  }
+  .nav > .nav-links {
+    order: 2;
+    display: flex !important;
+    flex: 1 0 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px 16px;
+    padding-top: 5px;
+    font-size: .84rem;
+  }
+  .nav > .nav-actions .btn,
+  .nav > .nav-actions .lang-toggle,
+  .nav > .nav-actions [data-lang-toggle] {
+    display: inline-flex !important;
+    min-height: 34px;
+    padding: 7px 9px;
+    font-size: .78rem;
+    white-space: nowrap;
+  }
+  .nav > .nav-actions #currentEmail,
+  .nav > .nav-actions #adminEmail { display: none !important; }
+  .nav > .nav-actions #signOutBtn { flex: 0 0 auto; }
+  .nav .nav-links a[hidden] { display: none !important; }
+  .page-heading > .nav-actions { width: 100%; flex-wrap: wrap; gap: 8px; }
+  .page-heading > .nav-actions .btn { flex: 1 1 auto; }
+  .panel-head { flex-wrap: wrap; align-items: flex-start; }
+  .toolbar, .table-actions { flex-wrap: wrap; }
+  .table-actions { min-width: 0; }
+}
+
+/* Keep cover images clipped to the profile frame on every screen size. */
+.public-profile { overflow: hidden; }
+.public-cover {
+  display: block;
+  width: calc(100% + 54px);
+  height: 132px;
+  margin: -32px -27px -54px;
+  border-radius: 30px 30px 14px 14px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+.preview-profile { overflow: hidden; }
+.preview-cover {
+  display: block;
+  width: calc(100% + 46px);
+  height: 118px;
+  margin: -27px -23px -44px;
+  border-radius: 27px 27px 14px 14px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+}
+.preview-cover:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,.38));
+}
+.preview-avatar, .preview-avatar-fallback { position: relative; z-index: 1; }
+.preview-profile:after {
+  background: linear-gradient(var(--preview-card-overlay, transparent), var(--preview-card-overlay, transparent)),
+    var(--preview-card-image, none), var(--pbg);
+  background-size: cover;
+  background-position: center;
+}
+.preview-profile.card-outline:after {
+  background: linear-gradient(var(--preview-card-overlay, transparent), var(--preview-card-overlay, transparent)),
+    var(--preview-card-image, none), transparent;
+}
+.public-profile:after {
+  background: linear-gradient(var(--pub-card-overlay, transparent), var(--pub-card-overlay, transparent)),
+    var(--pub-card-image, none), var(--pub-card, rgba(18,23,37,.8));
+  background-size: cover;
+  background-position: center;
+}
+.public-profile.card-outline:after {
+  background: linear-gradient(var(--pub-card-overlay, transparent), var(--pub-card-overlay, transparent)),
+    var(--pub-card-image, none), transparent;
+}
+.preview-stage {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.background-image-settings { margin-top: 14px; }
+.background-image-field {
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: rgba(255,255,255,.025);
+}
+.background-image-field input[type="file"] { padding: 9px; }
+@media (max-width: 650px) {
+  .public-profile { overflow: hidden; padding: 27px 18px 21px; }
+  .public-cover {
+    width: calc(100% + 36px);
+    height: 116px;
+    margin: -27px -18px -43px;
+    border-radius: 28px 28px 13px 13px;
+  }
+  .preview-profile { width: 100%; max-width: 350px; padding: 26px 18px; }
+  .preview-cover {
+    width: calc(100% + 36px);
+    height: 112px;
+    margin: -26px -18px -42px;
+    border-radius: 25px 25px 13px 13px;
+  }
+  .preview-stage { min-height: 590px; padding: 40px 10px 20px; }
+  .background-image-field { padding: 12px; }
+}
