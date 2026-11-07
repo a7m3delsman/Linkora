@@ -96,22 +96,134 @@
     'جميع المميزات متاحة حاليًا لكل الأعضاء بغض النظر عن العضوية.':'All features are currently available to every member, regardless of membership tier.',
     'تظهر الشارة بجوار الاسم في الصفحة العامة.':'The badge appears next to the name on the public page.'
   });
-  const reverse = Object.fromEntries(Object.entries(translations).map(([ar,en])=>[en,ar]));
+  Object.assign(translations, {
+    'Linkora — كل روابطك في صفحة واحدة':'Linkora — all your links in one page',
+    '✦ هويتك الرقمية في مكان واحد':'✦ Your digital identity in one place','✦ تصميم قابل للتخصيص':'✦ Customizable design','◈ رابط خاص بك':'◈ Your own link','⌁ خصوصية تتحكم فيها':'⌁ Privacy you control',
+    '◉ روابطك في مكان واحد':'◉ Your links in one place','✉ تواصل معي':'✉ Contact me','01 / حسابك':'01 / Your account','02 / تصميمك':'02 / Your design','03 / شارك':'03 / Share','أنشئ صفحتك الآن ↗':'Create your page now ↗','صفحتك. ألوانك. هويتك. ©':'Your page. Your colors. Your identity. ©',
+    '✓ تخصيص كامل':'✓ Full customization','✓ تحكم في المعلومات الظاهرة':'✓ Control what visitors can see','✓ تقدر تعدّل وقت ما تحب':'✓ Edit whenever you want','لازم تضيف رابط ومفتاح Supabase في':'Add your Supabase URL and key in','قبل تشغيل تسجيل الدخول.':'before enabling sign-in.','الاسم اللي هيظهر في صفحتك':'The name shown on your page','كلمة المرور الجديدة':'New password','تأكيد كلمة المرور الجديدة':'Confirm new password','تسجيل الدخول ↗':'Log in ↗','بروفايلك في مكان واحد.':'Your profile in one place.',
+    'محرر صفحتك — Linkora':'Your page editor — Linkora','الرئيسية':'Home','أضف رابط ومفتاح Supabase داخل':'Add your Supabase URL and key inside','، ثم نفّذ':'and then run','في SQL Editor.':'in the SQL Editor.','＋ أضف رابط':'＋ Add link','رابط صفحتك':'Your page link','افتح الصفحة ↗':'Open page ↗','عنوان المشكلة':'Issue title','التفاصيل':'Details','معاينة مباشرة':'Live preview','العودة للرئيسية ↑':'Back to home ↑',
+    '↻ تحديث البيانات':'↻ Refresh data','لازم تضيف إعدادات Supabase في':'Add your Supabase settings in','وتشغّل ملف':'and run','الوصول مخصص لمدير المنصة':'Platform admin access only','كل الطلبات':'All requests','عنوان الرسالة':'Message subject',
+    'بطاقة مستطيلة':'Rectangular card','أيقونة دائرية':'Circular icon','تمييز الرابط ✦':'Feature this link ✦','تمييز الرابط':'Feature this link','ما هو الرابط المميز؟':'What is a featured link?','فعّل الاختيار بجوار أي رابط مهم ليظهر بإطار ذهبي وتوهج خفيف وشارة Featured وحركة لافتة؛ مثل تمييز رابط أساسي أو أحدث عمل لك.':'Enable this for an important link to give it a gold border, subtle glow, Featured label, and animation — ideal for your main link or latest work.','كل رابط تقدر تعرضه كبطاقة مستطيلة، أو كأيقونة دائرية فقط، أو الاثنين معًا. الأيقونات الدائرية تظهر أسفل البطاقات بدون أي كتابة.':'Each link can appear as a rectangular card, a circular icon only, or both. Circular icons appear below the cards with no text.',
+    'تصميم البطاقات المستطيلة':'Rectangular card design','زجاجي أنيق':'Elegant glass','تدرج لوني':'Color gradient','حدود شفافة':'Transparent outline','لون واضح':'Solid color','حركة الروابط':'Link animation','ارتفاع ناعم عند المرور':'Soft lift on hover','توهج عند المرور':'Glow on hover','نبض هادئ':'Gentle pulse','بدون حركة':'No animation','تؤثر الحركة على البطاقات المستطيلة فقط؛ الأيقونات الدائرية لها حركة مستقلة.':'This animation affects rectangular cards only; circular icons have their own motion.',
+    'منح حسابي علامة Linkora Verified الزرقاء':'Grant my account the blue Linkora Verified badge','إظهار شارة VIP أو Pro بجوار اسمي في الصفحة العامة':'Show the VIP or Pro badge next to my name on the public page','إظهار علامة التوثيق الزرقاء في الصفحة العامة':'Show the blue verification badge on the public page','منح علامة Linkora Verified لهذا العضو':'Grant this member the Linkora Verified badge','إظهار شارة VIP أو Pro في الصفحة العامة':'Show the VIP or Pro badge on the public page','إظهار علامة التوثيق الزرقاء في الصفحة العامة':'Show the blue verification badge on the public page',
+    'منح علامة Linkora Verified لهذا العضو':'Grant this member the Linkora Verified badge','بطاقة مستطيلة':'Rectangular card','أيقونة دائرية':'Circular icon','تظهر الأيقونة بدون اسم أو كتابة؛ اضغط عليها لفتح الرابط.':'The icon appears without a label. Click it to open the link.',
+    'تفاصيل':'Details','لا توجد نتائج مطابقة.':'No matching results.','لا توجد طلبات دعم في هذا التصنيف.':'No support requests in this category.','رد المدير':'Admin reply','اكتب ردًا يظهر في حساب العضو…':'Write a reply that will appear in the member account…','مفتوح':'Open','قيد المتابعة':'In progress','مغلق':'Closed','حفظ الرد والحالة':'Save reply and status','رسالة مباشرة للعضو':'Send direct message','اختر العضو المستلم':'Choose a recipient','لم ترسل رسائل مباشرة بعد.':'No direct messages have been sent yet.','إلى:':'To:','مفعّل':'Enabled','لا توجد روابط مسجلة.':'No links recorded.','تفاصيل ':'Details: ','البريد':'Email','اسم المستخدم':'Username','المسمى':'Title','تاريخ التسجيل':'Joined','الوصف':'Bio','آخر تحديث':'Last updated','حالة الحساب':'Account status','حالة النشر':'Publishing status','تاريخ الميلاد (خاص)':'Date of birth (private)','المكان':'Location','الطول':'Height','الوزن':'Weight','ألوان الصفحة':'Page colors','روابط الصفحة':'Page links','فتح الصفحة العامة ↗':'Open public page ↗','إرسال رسالة للعضو':'Message member','حذف الحساب نهائيًا':'Permanently delete account','حظر':'Ban','فك الحظر':'Unban','إلغاء النشر':'Unpublish','نشر':'Publish',
+    'حجم الصورة أكبر من 5 ميجابايت.':'Image size exceeds 5 MB.','حجم صورة الغلاف أكبر من 5 ميجابايت.':'Cover image size exceeds 5 MB.','نوع الصورة غير مدعوم. استخدم JPG أو PNG أو WEBP أو GIF.':'Unsupported image type. Use JPG, PNG, WEBP, or GIF.','نوع صورة الغلاف غير مدعوم.':'Unsupported cover image type.','عنوان الرابط غير صالح:':'Invalid link URL:','استخدم https:// أو mailto: أو tel:.':'Use https://, mailto:, or tel:.','أكمل اسم الرابط وعنوانه، أو احذف الصف الفارغ.':'Complete the link name and URL, or remove the empty row.','تاريخ الميلاد لا يمكن أن يكون في المستقبل.':'Date of birth cannot be in the future.','اسم الرابط لازم يكون من 3 إلى 28 حرفًا، ويحتوي حروفًا إنجليزية أو أرقامًا أو شرطة.':'Username must be 3–28 characters and contain only English letters, numbers, or hyphens.','اكتب الاسم الظاهر.':'Enter the display name.','اختَر اسم مستخدم صالح واحفظه أولًا.':'Choose a valid username and save it first.','انشر صفحتك أولًا حتى يستطيع الآخرون فتحها.':'Publish your page first so others can open it.','تعذر تحميل مولّد QR. تحقق من اتصال الإنترنت.':'Could not load the QR generator. Check your internet connection.','تعذر تحميل المحرر. راجع إعداد Supabase.':'Could not load the editor. Check your Supabase settings.',
+    'تم تحديث العضوية إلى':'Membership updated to','وتحديث حالة التوثيق.':'and verification status updated.','تم حفظ عضويتك.':'Your membership has been saved.','تعذر حفظ عضويتك.':'Could not save your membership.','تم تحديث العضوية.':'Membership updated.','تعذر تحديث العضوية.':'Could not update membership.','حصل خطأ أثناء الحفظ.':'An error occurred while saving.','تم إلغاء نشر الصفحة.':'Page unpublished.','تم نشر الصفحة.':'Page published.',
+    'تغيير المظهر':'Change appearance','معاينة توضيحية لصفحة Linkora':'Illustrative Linkora page preview',
+    'مثال: أحمد السمان':'Example: Ahmed El-Saman','8 أحرف على الأقل':'At least 8 characters','اكتب كلمة المرور مرة أخرى':'Enter your password again','أعد كتابة كلمة المرور':'Re-enter your password',
+    'أضف Instagram أو LinkedIn أو WhatsApp أو موقعك أو أي رابط. لكل رابط اختَر ظهوره كبطاقة مستطيلة، أو كأيقونة دائرية فقط، أو الاثنين معًا. الأيقونات الدائرية تظهر أسفل البطاقات بدون أي كتابة.':'Add Instagram, LinkedIn, WhatsApp, your website, or any link. For each one, choose a rectangular card, an icon-only circle, or both. Circular icons appear below the cards with no text.',
+    'أضف رابطًا لمشاهدة المعاينة.':'Add a link to see the preview.','مثال: محتاج مساعدة في رابط مخصص':'Example: I need help with a custom link','اشرح لنا محتاج مساعدة في إيه...':'Tell us what you need help with...',
+    'تنبيه من إدارة Linkora':'Notice from Linkora administration','اكتب الرسالة التي ستظهر للعضو داخل حسابه…':'Write the message that will appear in the member’s account…','إغلاق':'Close',
+    '. لو ده حسابك، نفّذ خطوة ترقية المدير في دليل الإعداد.':'. If this is your account, follow the admin-upgrade step in the setup guide.',
+    'انسخ الرابط المحدد يدويًا.':'Copy the selected link manually.','الإحصاءات لآخر 30 يومًا. قد تستغرق بعض الزيارات لحظات حتى تظهر.':'Statistics for the last 30 days. Some visits may take a few moments to appear.',
+    'تعذر تحميل الطلبات.':'Could not load support requests.','لسه مفيش طلبات دعم.':'There are no support requests yet.','رد الدعم:':'Support reply:','تعذر تحميل رسائل الإدارة. تأكد من تشغيل supabase/upgrade_admin.sql.':'Could not load admin messages. Make sure supabase/upgrade_admin.sql has been run.',
+    'لا توجد رسائل من الإدارة حاليًا.':'There are no admin messages right now.','تحديد كمقروءة':'Mark as read','انسخ الرابط المحدد يدويًا.':'Copy the selected link manually.',
+    'وصف الصفحة':'Page description','الدراسة / الوظيفة':'Study / occupation','العودة للموقع ↑':'Back to website ↑','إدارة المنصة والدعم':'Platform and support management','متابعة الحسابات والصفحات المنشورة وطلبات المساعدة.':'Manage accounts, published pages, and support requests.',
+    'إجمالي الحسابات':'Total accounts','صفحات منشورة':'Published pages','صفحات مسودة':'Draft pages','طلبات دعم مفتوحة':'Open support tickets','حسابات محظورة':'Banned accounts','رسائل غير مقروءة':'Unread messages',
+    'عضوية حساب المدير':'Administrator membership','إعداد شارة حسابك الإداري بشكل مستقل عن قائمة الأعضاء المحمية.':'Manage your admin account badges separately from the protected member list.',
+    'إظهار شارة VIP أو Pro بجوار اسمي في الصفحة العامة':'Show the VIP or Pro badge next to my name on the public page',
+    'تحريك لأعلى':'Move up','تحريك لأسفل':'Move down','حذف الرابط':'Remove link','Supabase غير مضبوط':'Supabase is not configured','تعديل صفحة عضو':'Edit member page',
+    'وضع الدعم الفني: التعديلات ستظهر في صفحة العضو بعد الحفظ.':'Support mode: changes will appear on the member page after saving.',
+    'تعذر تحميل الطلبات.':'Could not load requests.','لسه مفيش طلبات دعم.':'There are no support requests yet.','رد الدعم:':'Support reply:','تعذر تحميل رسائل الإدارة. تأكد من تشغيل supabase/upgrade_admin.sql.':'Could not load admin messages. Make sure supabase/upgrade_admin.sql has been run.',
+    'لا توجد رسائل من الإدارة حاليًا.':'There are no admin messages right now.','تحديد كمقروءة':'Mark as read','انسخ الرابط المحدد يدويًا.':'Copy the selected link manually.',
+    'الإحصاءات لآخر 30 يومًا. قد تستغرق بعض الزيارات لحظات حتى تظهر.':'Statistics for the last 30 days. Some visits may take a few moments to appear.',
+    'اتحفظت التغييرات بنجاح ✦':'Changes saved successfully ✦','تعذر تحميل مولّد QR. تحقق من اتصال الإنترنت.':'Could not load the QR generator. Check your internet connection.',
+    'رابط الصورة غير صالح.':'Invalid image URL.','رابط صورة الغلاف غير صالح.':'Invalid cover image URL.','سجّل الدخول أولًا.':'Please sign in first.',
+    'اكتب عنوانًا وتفاصيل أوضح شوية.':'Please provide a clearer title and more details.','تم إرسال طلب الدعم.':'Support request sent.','تعذر إرسال طلب الدعم.':'Could not send the support request.',
+    'تم تحديث البيانات.':'Data refreshed.','تعذر تحديث البيانات.':'Could not refresh the data.','تم حفظ الرد والحالة.':'Reply and status saved.','تعذر تحديث طلب الدعم.':'Could not update the support request.',
+    'لا يوجد بريد إلكتروني لهذا الحساب.':'This account has no email address.','لم يتم العثور على الرسالة.':'Message not found.','تم إلغاء نشر الصفحة.':'Page unpublished.','تم نشر الصفحة.':'Page published.',
+    'جميع الروابط':'All links','لا توجد نتائج مطابقة.':'No matching results.','لا توجد طلبات دعم في هذا التصنيف.':'There are no support requests in this category.',
+    'سبب منح العضوية أو التوثيق (اختياري)':'Reason for membership or verification (optional)','إلى:':'To:','العضو المستلم':'Recipient member','الرسالة والتنبيهات الخاصة بحسابك من إدارة المنصة.':'Messages and notifications for your account from platform administration.'
+  });
+  const reverse = new Map();
+  for (const [ar,en] of Object.entries(translations)) if (!reverse.has(en)) reverse.set(en,ar);
   const langKey='linkora-language';
   const getLang=()=>localStorage.getItem(langKey)==='en'?'en':'ar';
-  function translateValue(value,lang){const clean=String(value??'');const trimmed=clean.trim();const replacement=(lang==='en'?translations:reverse)[trimmed];return replacement===undefined?value:clean.replace(trimmed,replacement);}
+  const originalText=new WeakMap(), lastText=new WeakMap(), originalAttrs=new WeakMap(), lastAttrs=new WeakMap();
+  function translatedValue(value,lang){
+    const raw=String(value??''),trimmed=raw.trim();if(!trimmed)return value;
+    const exact=lang==='en'?translations[trimmed]:reverse.get(trimmed);
+    if(exact!==undefined)return raw.replace(trimmed,exact);
+    const patterns=lang==='en' ? [
+      [/^روابط الصفحة \((\d+)\)$/, 'Profile links ($1)'],
+      [/^(\d+) سنة$/, '$1 years old'],
+      [/^↕ (.+) سم$/, 'Height: $1 cm'],
+      [/^⚖ (.+) كجم$/, 'Weight: $1 kg'],
+      [/^(\d+) من (\d+)$/, '$1 of $2'],
+      [/^تفاصيل (.+)$/, 'Details for $1'],
+      [/^إلى: (.+)$/, 'To: $1'],
+      [/^تم تحديث العضوية إلى (.+) وتحديث حالة التوثيق\.$/, 'Membership updated to $1 and verification status updated.'],
+      [/^إرسال رسالة استعادة كلمة المرور إلى (.+)\؟$/, 'Send a password reset email to $1?'],
+      [/^حذف محتوى صفحة (.+)\؟ سيُمسح محتوى الصفحة والروابط والصورة، ويُعاد الملف كمسودة فارغة\. الحساب سيظل موجودًا\.$/, 'Delete the page content for $1? The page content, links, and photo will be removed and the page reset to a blank draft. The account will remain.'],
+      [/^تأكيد حظر (.+)\؟ لن يتمكن من تسجيل الدخول أو استخدام أدوات الحساب\.$/, 'Ban $1? They will no longer be able to sign in or use account tools.'],
+      [/^فك حظر (.+) والسماح له بالدخول مرة أخرى\؟$/, 'Unban $1 and allow them to sign in again?'],
+      [/^تحذير: حذف (.+) نهائيًا\؟ سيتم حذف حساب Auth والصفحة والروابط وطلبات الدعم والرسائل والملفات المرفوعة\. لا يمكن التراجع\.$/, 'Warning: permanently delete $1? The Auth account, page, links, support requests, messages, and uploaded files will be deleted. This cannot be undone.'],
+      [/^تأكيد أخير: هل أنت متأكد من الحذف النهائي\؟$/, 'Final confirmation: are you sure you want to permanently delete this account?']
+    ] : [
+      [/^Profile links \((\d+)\)$/, 'روابط الصفحة ($1)'],
+      [/^(\d+) years old$/, '$1 سنة'],
+      [/^Height: (.+) cm$/, '↕ $1 سم'],
+      [/^Weight: (.+) kg$/, '⚖ $1 كجم'],
+      [/^(\d+) of (\d+)$/, '$1 من $2'],
+      [/^Details for (.+)$/, 'تفاصيل $1'],
+      [/^To: (.+)$/, 'إلى: $1'],
+      [/^Membership updated to (.+) and verification status updated\.$/, 'تم تحديث العضوية إلى $1 وتحديث حالة التوثيق.']
+    ];
+    for(const [pattern,replacement] of patterns){const match=trimmed.match(pattern);if(match){const output=trimmed.replace(pattern,replacement);return raw.replace(trimmed,output);}}
+    return value;
+  }
+  const trimReplace=(value,from)=>translatedValue(value,from===translations?'en':'ar');
+  function translateTextNode(node,lang=getLang()){
+    const current=node.nodeValue;
+    if(!originalText.has(node)) originalText.set(node,current);
+    else if(lastText.has(node)&&current!==lastText.get(node)){
+      let source=current;
+      if(lang==='ar'&&reverse.has(current.trim()))source=current.replace(current.trim(),reverse.get(current.trim()));
+      originalText.set(node,source);
+    }
+    const source=originalText.get(node);
+    // The source text is kept untouched so Arabic ↔ English always returns to the exact original.
+    const translated=lang==='en'?trimReplace(source,translations):trimReplace(source,reverse);
+    if(translated!==current)node.nodeValue=translated;
+    lastText.set(node,node.nodeValue);
+  }
+  function translateAttribute(el,attr,lang=getLang()){
+    let originals=originalAttrs.get(el);if(!originals){originals=new Map();originalAttrs.set(el,originals);}
+    let applied=lastAttrs.get(el);if(!applied){applied=new Map();lastAttrs.set(el,applied);}
+    const current=el.getAttribute(attr);if(current===null)return;
+    if(!originals.has(attr))originals.set(attr,current);
+    else if(applied.has(attr)&&current!==applied.get(attr)){
+      let source=current;if(lang==='ar'&&reverse.has(current.trim()))source=current.replace(current.trim(),reverse.get(current.trim()));
+      originals.set(attr,source);
+    }
+    const source=originals.get(attr);const translated=lang==='en'?trimReplace(source,translations):trimReplace(source,reverse);
+    if(translated!==current)el.setAttribute(attr,translated);
+    applied.set(attr,el.getAttribute(attr));
+  }
   function apply(root=document){
     const lang=getLang();document.documentElement.lang=lang;document.documentElement.dir=lang==='en'?'ltr':'rtl';
     const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){return node.parentElement&&!['SCRIPT','STYLE','NOSCRIPT'].includes(node.parentElement.tagName)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});
-    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);for(const node of nodes){const next=translateValue(node.nodeValue,lang);if(next!==node.nodeValue)node.nodeValue=next;}
-    [...(root.matches?.('[placeholder],[title],[aria-label]')?[root]:[]),...(root.querySelectorAll?.('[placeholder],[title],[aria-label]')||[])].forEach(el=>['placeholder','title','aria-label'].forEach(attr=>{const v=el.getAttribute(attr);if(v)el.setAttribute(attr,translateValue(v,lang));}));
+    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);for(const node of nodes)translateTextNode(node,lang);
+    const elements=[...(root.matches?.('[placeholder],[title],[aria-label]')?[root]:[]),...(root.querySelectorAll?.('[placeholder],[title],[aria-label]')||[])];
+    elements.forEach(el=>['placeholder','title','aria-label'].forEach(attr=>translateAttribute(el,attr,lang)));
     const toggle=document.querySelector('[data-lang-toggle]');if(toggle){toggle.textContent=lang==='ar'?'EN':'عربي';toggle.setAttribute('aria-label',lang==='ar'?'Switch to English':'التبديل إلى العربية');}
   }
   function addToggle(){
-    if(document.querySelector('[data-lang-toggle]'))return;
+    const path=location.pathname;
+    const isHome=path.endsWith('/')||path.endsWith('/index.html')||path==='index.html';
+    if(!isHome||document.body.classList.contains('public-body')||document.querySelector('[data-lang-toggle]'))return;
     const button=document.createElement('button');button.type='button';button.className='btn btn-small lang-toggle';button.dataset.langToggle='true';button.addEventListener('click',()=>{localStorage.setItem(langKey,getLang()==='ar'?'en':'ar');apply(document);});
     const host=document.querySelector('.nav-actions');if(host)host.append(button);else{button.classList.add('floating-lang-toggle');document.body.append(button);}apply(document);
   }
-  document.addEventListener('DOMContentLoaded',()=>{addToggle();apply(document);const observer=new MutationObserver(records=>{for(const r of records){if(r.type==='childList')r.addedNodes.forEach(n=>{if(n.nodeType===Node.ELEMENT_NODE)apply(n);else if(n.nodeType===Node.TEXT_NODE){const next=translateValue(n.nodeValue,getLang());if(next!==n.nodeValue)n.nodeValue=next;}});else if(r.type==='characterData'){const next=translateValue(r.target.nodeValue,getLang());if(next!==r.target.nodeValue)r.target.nodeValue=next;}}});observer.observe(document.body,{childList:true,subtree:true,characterData:true});});
+  document.addEventListener('DOMContentLoaded',()=>{
+    addToggle();apply(document);
+    const observer=new MutationObserver(records=>{for(const r of records){
+      if(r.type==='childList')r.addedNodes.forEach(n=>{if(n.nodeType===Node.ELEMENT_NODE)apply(n);else if(n.nodeType===Node.TEXT_NODE)translateTextNode(n);});
+      else if(r.type==='characterData')translateTextNode(r.target);
+      else if(r.type==='attributes')translateAttribute(r.target,r.attributeName);
+    }});
+    observer.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']});
+  });
   window.LinkoraI18n={apply,lang:getLang};
 })();

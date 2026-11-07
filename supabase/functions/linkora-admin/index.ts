@@ -76,6 +76,8 @@ Deno.serve(async (req: Request) => {
       const tier = String(body.tier ?? 'free').toLowerCase();
       if (!['free', 'pro', 'vip'].includes(tier)) return json({ error: 'Invalid membership tier.' }, 400);
       const isVerified = body.isVerified === true;
+      const showMembershipBadge = body.showMembershipBadge !== false;
+      const showVerifiedBadge = body.showVerifiedBadge !== false;
       const rawExpiry = String(body.expiresAt ?? '').trim();
       let expiresAt: string | null = null;
       if (rawExpiry) {
@@ -88,6 +90,8 @@ Deno.serve(async (req: Request) => {
         profile_id: targetUserId,
         tier,
         is_verified: isVerified,
+        show_membership_badge: showMembershipBadge,
+        show_verified_badge: showVerifiedBadge,
         expires_at: expiresAt,
         admin_note: adminNote,
         updated_by: caller.id,
