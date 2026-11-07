@@ -9,13 +9,13 @@ const presets = {
   mono:{accent:'#b4c0d8',accent2:'#f0f3ff',background:'#171a22',mode:'dark',animation:'glow',card:'outline'},
   rose:{accent:'#d18aff',accent2:'#ff9dbb',background:'#1a1221',mode:'dark',animation:'aurora',card:'glass'}
 };
-let user = null, profileId = null, profile = null, extras = {}, savedLinks = [], selectedFile = null, currentAvatar = '', admin = false, saving = false;
+let user = null, profileId = null, profile = null, extras = {}, savedLinks = [], selectedFile = null, currentAvatar = '', currentCover = '', selectedCoverFile = null, admin = false, saving = false;
 const val = id => $(`#${id}`).value;
 const checked = id => $(`#${id}`).checked;
 const setVal = (id, v='') => { $(`#${id}`).value = v ?? ''; };
 const fields = ['displayName','username','subtitle','bio','avatarUrl','birthDate','location','heightCm','weightKg','occupation','showBirthDate','showLocation','showHeight','showWeight','showOccupation','accent','accent2','background','mode','animation','card','publishToggle'];
 
-function currentTheme(){ return { accent:val('accent')||presets.aurora.accent, accent2:val('accent2')||presets.aurora.accent2, background:val('background')||presets.aurora.background, mode:val('mode'), animation:val('animation'), card:val('card') }; }
+function currentTheme(){ return { accent:val('accent')||presets.aurora.accent, accent2:val('accent2')||presets.aurora.accent2, background:val('background')||presets.aurora.background, mode:val('mode'), animation:val('animation'), card:val('card'), linkStyle:val('linkStyle')||'cards' }; }
 function shareUrl(){ const slug=cleanSlug(val('username')); return slug ? `${new URL('p.html',location.href).href}?u=${encodeURIComponent(slug)}` : ''; }
 function updateShare(){ const url=shareUrl(); $('#shareUrl').value=url; $('#openPublicBtn').href=url || 'p.html'; $('#openPageLink').href=url || 'p.html'; }
 function syncPublish(v){ $('#publishToggle').checked=v; $('#publishBottom').checked=v; }
@@ -42,6 +42,13 @@ function updatePreview(){
     else { const img=document.createElement('img');img.id='previewAvatar';img.className='preview-avatar';img.src=safeUrl(src);img.alt='صورة البروفايل';img.onerror=()=>{img.replaceWith(makeAvatarFallback());};avatar.replaceWith(img); }
   } else if(avatar.tagName==='IMG') avatar.replaceWith(makeAvatarFallback());
   else { avatar.textContent=(val('displayName').trim().slice(0,1)||'L').toUpperCase();avatar.className='preview-avatar-fallback'; }
+  const cover = $('#previewCover');
+  const coverSrc = val('coverUrl').trim();
+  if(selectedCoverFile){
+    if(!cover.dataset.tempUrl) cover.dataset.tempUrl = URL.createObjectURL(selectedCoverFile);
+    cover.style.backgroundImage = `url("${cover.dataset.tempUrl}")`; cover.hidden = false;
+  } else if(coverSrc && safeUrl(coverSrc)) { cover.style.backgroundImage = `url("${safeUrl(coverSrc)}")`; cover.hidden = false; }
+  else { cover.style.backgroundImage = ''; cover.hidden = true; }
   const facts=[];
   if(checked('showBirthDate') && val('birthDate')) { const age=ageFromDate(val('birthDate'));if(age!==null)facts.push(`${age} سنة`); }
   if(checked('showLocation') && val('location').trim()) facts.push(`⌖ ${val('location').trim()}`);
@@ -50,9 +57,10 @@ function updatePreview(){
   if(checked('showOccupation') && val('occupation').trim()) facts.push(val('occupation').trim());
   $('#previewFacts').innerHTML=facts.map(x=>`<span class="fact-chip">${esc(x)}</span>`).join('');
   const linkRows=$$('#linkRows .link-edit-row');
-  const rows=linkRows.map(row=>({label:row.querySelector('.link-label-input').value.trim(),url:row.querySelector('.link-url-input').value.trim(),icon:row.querySelector('.link-icon-input').value.trim()})).filter(x=>x.label && safeUrl(x.url));
+  const rows=linkRows.map(row=>({label:row.querySelector('.link-label-input').value.trim(),url:row.querySelector('.link-url-input').value.trim(),icon:row.querySelector('.link-icon-input').value.trim(),is_featured:row.querySelector('.link-featured-input').checked})).filter(x=>x.label && safeUrl(x.url));
   linkRows.forEach(row=>{const host=row.querySelector('.link-icon-editor');if(host){const label=row.querySelector('.link-label-input').value.trim(),url=row.querySelector('.link-url-input').value.trim(),icon=row.querySelector('.link-icon-input').value.trim();host.outerHTML=renderLinkIcon(url,label,icon,'link-icon-editor');}});
-  $('#previewLinks').innerHTML=rows.map(l=>`<div class="preview-link"><span class="preview-link-main">${renderLinkIcon(l.url,l.label,l.icon,'link-icon-preview')}<span>${esc(l.label)}</span></span><span class="preview-external">↗</span></div>`).join('') || '<p class="muted small">روابطك هتظهر هنا بعد إضافتها.</p>';
+  $('#previewLinks').classList.toggle('icon-grid', t.linkStyle === 'icons');
+  $('#previewLinks').innerHTML=rows.map(l=>`<div class="preview-link ${l.is_featured?'featured':''}">${l.is_featured?'<span class="featured-label">✦ مميز</span>':''}<span class="preview-link-main">${renderLinkIcon(l.url,l.label,l.icon,'link-icon-preview')}<span>${esc(l.label)}</span></span><span class="preview-external">↗</span></div>`).join('') || '<p class="muted small">روابطك هتظهر هنا بعد إضافتها.</p>';
   updateShare();
 }
 function makeAvatarFallback(){const d=document.createElement('div');d.id='previewAvatar';d.className='preview-avatar-fallback';d.textContent=(val('displayName').trim().slice(0,1)||'L').toUpperCase();return d;}
@@ -62,12 +70,12 @@ function renderLinkRows(links=[]){
   links.forEach(l=>{
     const row=document.createElement('div');row.className='link-edit-row';row.dataset.linkId=l.id||'';
     const autoKey=resolveLinkIcon(l.url||'',l.label||'','').key;const savedKey=resolveLinkIcon(l.url||'',l.label||'',l.icon||'').key;const autoValue=(!l.icon||['↗','→','➜'].includes(l.icon)||(!savedKey.startsWith('custom')&&savedKey===autoKey))?'':l.icon;
-    row.innerHTML=`<input class="link-label-input" maxlength="70" aria-label="اسم الرابط" placeholder="Instagram" value="${esc(l.label||'')}"><input class="link-url-input" type="url" aria-label="عنوان الرابط" placeholder="https://…" value="${esc(l.url||'')}"><div class="link-icon-control">${renderLinkIcon(l.url||'',l.label||'',l.icon||'','link-icon-editor')}<input class="link-icon-input" maxlength="24" aria-label="رمز مخصص اختياري" placeholder="تلقائي" value="${esc(autoValue)}"></div><button type="button" class="btn btn-danger btn-small remove-link" aria-label="حذف الرابط">حذف</button>`;
+    row.innerHTML=`<div class="link-label-wrap"><input class="link-label-input" maxlength="70" aria-label="اسم الرابط" placeholder="Instagram" value="${esc(l.label||'')}"><label class="link-featured-label"><input class="link-featured-input" type="checkbox" ${l.is_featured?'checked':''}> رابط مميز ✦</label></div><input class="link-url-input" type="url" aria-label="عنوان الرابط" placeholder="https://…" value="${esc(l.url||'')}"><div class="link-icon-control">${renderLinkIcon(l.url||'',l.label||'',l.icon||'','link-icon-editor')}<input class="link-icon-input" maxlength="24" aria-label="رمز مخصص اختياري" placeholder="تلقائي" value="${esc(autoValue)}"></div><div class="link-row-actions"><button type="button" class="btn btn-small move-link-up" aria-label="تحريك لأعلى">↑</button><button type="button" class="btn btn-small move-link-down" aria-label="تحريك لأسفل">↓</button><button type="button" class="btn btn-danger btn-small remove-link" aria-label="حذف الرابط">×</button></div>`;
     host.append(row);
   });
   $('#emptyLinks').hidden=links.length>0;
 }
-function addLinkRow(link={}){const current=$$('#linkRows .link-edit-row').map(row=>({id:row.dataset.linkId,label:row.querySelector('.link-label-input').value,url:row.querySelector('.link-url-input').value,icon:row.querySelector('.link-icon-input').value}));current.push(link);renderLinkRows(current);updatePreview();}
+function addLinkRow(link={}){const current=$$('#linkRows .link-edit-row').map(row=>({id:row.dataset.linkId,label:row.querySelector('.link-label-input').value,url:row.querySelector('.link-url-input').value,icon:row.querySelector('.link-icon-input').value,is_featured:row.querySelector('.link-featured-input').checked}));current.push(link);renderLinkRows(current);updatePreview();}
 function setPreset(name){const p=presets[name];if(!p)return;Object.entries(p).forEach(([k,v])=>setVal(k,v));$$('[data-preset]').forEach(b=>b.classList.toggle('active',b.dataset.preset===name));updatePreview();}
 async function loadPage(){
   if(!isConfigured){showConfigWarning();$('#currentEmail').textContent='Supabase غير مضبوط';return;}
@@ -81,21 +89,29 @@ async function loadPage(){
   if(supportMode){$('#editorHeading').textContent='تعديل صفحة عضو';$('.page-heading p').textContent='وضع الدعم الفني: التعديلات ستظهر في صفحة العضو بعد الحفظ.';$('#supportForm').closest('.panel').hidden=true;$('#adminMessagesPanel').hidden=true;}
   const {data:p,error:pErr}=await supabase.from('profiles').select('*').eq('id',profileId).maybeSingle();if(pErr)throw pErr;
   if(!p){toast('لم يتم العثور على ملفك. شغّل schema.sql في Supabase.','error');return;}
-  profile=p;
+  profile=p;currentCover=p.cover_url||'';
   const {data:x,error:xErr}=await supabase.from('profile_extras').select('*').eq('profile_id',profileId).maybeSingle();if(xErr)throw xErr;extras=x||{};
   const {data:ls,error:lErr}=await supabase.from('profile_links').select('*').eq('profile_id',profileId).order('sort_order').order('created_at');if(lErr)throw lErr;savedLinks=ls||[];
-  setVal('displayName',p.display_name);setVal('username',p.username);setVal('subtitle',p.subtitle);setVal('bio',p.bio);currentAvatar=p.avatar_url||'';setVal('avatarUrl',currentAvatar);
+  setVal('displayName',p.display_name);setVal('username',p.username);setVal('subtitle',p.subtitle);setVal('bio',p.bio);currentAvatar=p.avatar_url||'';setVal('avatarUrl',currentAvatar);setVal('coverUrl',currentCover);
   setVal('birthDate',x?.birth_date||'');setVal('location',x?.location||'');setVal('heightCm',x?.height_cm??'');setVal('weightKg',x?.weight_kg??'');setVal('occupation',x?.occupation||'');
   ['showBirthDate','showLocation','showHeight','showWeight','showOccupation'].forEach(k=>$('#'+k).checked=!!x?.[({showBirthDate:'show_birth_date',showLocation:'show_location',showHeight:'show_height',showWeight:'show_weight',showOccupation:'show_occupation'})[k]]);
-  const t={...presets.aurora,...(p.theme||{})};['accent','accent2','background','mode','animation','card'].forEach(k=>setVal(k,t[k]||presets.aurora[k]));syncPublish(!!p.is_published);renderLinkRows(savedLinks);updatePreview();
+  const t={...presets.aurora,...(p.theme||{})};['accent','accent2','background','mode','animation','card','linkStyle'].forEach(k=>setVal(k,t[k]||presets.aurora[k]||(k==='linkStyle'?'cards':'')));syncPublish(!!p.is_published);renderLinkRows(savedLinks);updatePreview();
   if(p.theme?.accent) $$('[data-preset]').forEach(b=>b.classList.remove('active'));
-  $('#saveTopBtn').disabled=false; await loadTickets(); if(!supportMode) await loadAdminMessages();
+  $('#saveTopBtn').disabled=false; await loadTickets(); if(!supportMode) await loadAdminMessages(); if(!supportMode) await loadAnalytics();
 }
 async function uploadAvatar(){
   const file=$('#avatarFile').files[0];if(!file)return safeUrl(val('avatarUrl'))||'';
   if(file.size>5*1024*1024)throw new Error('حجم الصورة أكبر من 5 ميجابايت.');
   if(!/^image\/(jpeg|png|webp|gif)$/.test(file.type))throw new Error('نوع الصورة غير مدعوم. استخدم JPG أو PNG أو WEBP أو GIF.');
   const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');const path=`${profileId}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext||'jpg'}`;
+  const {error}=await supabase.storage.from('linkora-avatars').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(error)throw error;
+  const {data}=supabase.storage.from('linkora-avatars').getPublicUrl(path);return data.publicUrl;
+}
+async function uploadCover(){
+  const file=$('#coverFile').files[0];if(!file)return safeUrl(val('coverUrl'))||currentCover||'';
+  if(file.size>5*1024*1024)throw new Error('حجم صورة الغلاف أكبر من 5 ميجابايت.');
+  if(!/^image\/(jpeg|png|webp|gif)$/.test(file.type))throw new Error('نوع صورة الغلاف غير مدعوم.');
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');const path=`${profileId}/cover-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext||'jpg'}`;
   const {error}=await supabase.storage.from('linkora-avatars').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(error)throw error;
   const {data}=supabase.storage.from('linkora-avatars').getPublicUrl(path);return data.publicUrl;
 }
@@ -106,19 +122,21 @@ async function saveAll(){
     const name=val('displayName').trim(), slug=cleanSlug(val('username'));
     if(!name)throw new Error('اكتب الاسم الظاهر.');if(slug.length<3||slug.length>28)throw new Error('اسم الرابط لازم يكون من 3 إلى 28 حرفًا، ويحتوي حروفًا إنجليزية أو أرقامًا أو شرطة.');
     if(val('birthDate') && new Date(val('birthDate'))>new Date())throw new Error('تاريخ الميلاد لا يمكن أن يكون في المستقبل.');
-    const normalizedLinks=[];for(const row of $$('#linkRows .link-edit-row')){const label=row.querySelector('.link-label-input').value.trim(),url=row.querySelector('.link-url-input').value.trim(),icon=row.querySelector('.link-icon-input').value.trim();if(!label&&!url)continue;if(!label||!url)throw new Error('أكمل اسم الرابط وعنوانه، أو احذف الصف الفارغ.');const valid=safeUrl(url);if(!valid)throw new Error(`عنوان الرابط غير صالح: ${label}. استخدم https:// أو mailto: أو tel:.`);const detected=resolveLinkIcon(valid,label,icon);normalizedLinks.push({id:row.dataset.linkId||null,label,url:valid,icon:icon||detected.key,sort_order:normalizedLinks.length,is_enabled:true,profile_id:profileId});}
+    const normalizedLinks=[];for(const row of $$('#linkRows .link-edit-row')){const label=row.querySelector('.link-label-input').value.trim(),url=row.querySelector('.link-url-input').value.trim(),icon=row.querySelector('.link-icon-input').value.trim(),isFeatured=row.querySelector('.link-featured-input').checked;if(!label&&!url)continue;if(!label||!url)throw new Error('أكمل اسم الرابط وعنوانه، أو احذف الصف الفارغ.');const valid=safeUrl(url);if(!valid)throw new Error(`عنوان الرابط غير صالح: ${label}. استخدم https:// أو mailto: أو tel:.`);const detected=resolveLinkIcon(valid,label,icon);normalizedLinks.push({id:row.dataset.linkId||null,label,url:valid,icon:icon||detected.key,sort_order:normalizedLinks.length,is_enabled:true,is_featured:isFeatured,profile_id:profileId});}
     let avatarUrl=currentAvatar;
     if($('#avatarFile').files[0]) avatarUrl=await uploadAvatar(); else if(val('avatarUrl').trim()){avatarUrl=safeUrl(val('avatarUrl'));if(!avatarUrl)throw new Error('رابط الصورة غير صالح.');} else avatarUrl='';
-    const row={id:profileId,username:slug,display_name:name,subtitle:val('subtitle').trim(),bio:val('bio').trim(),avatar_url:avatarUrl,theme:currentTheme(),is_published:checked('publishToggle')};
+    let coverUrl=currentCover;
+    if(selectedCoverFile || $('#coverFile').files[0]) coverUrl=await uploadCover(); else if(val('coverUrl').trim()){coverUrl=safeUrl(val('coverUrl'));if(!coverUrl)throw new Error('رابط صورة الغلاف غير صالح.');} else coverUrl='';
+    const row={id:profileId,username:slug,display_name:name,subtitle:val('subtitle').trim(),bio:val('bio').trim(),avatar_url:avatarUrl,cover_url:coverUrl,theme:currentTheme(),is_published:checked('publishToggle')};
     const {error:pErr}=await supabase.from('profiles').upsert(row,{onConflict:'id'});if(pErr)throw pErr;
     const x={profile_id:profileId,birth_date:val('birthDate')||null,show_birth_date:checked('showBirthDate'),height_cm:val('heightCm')?Number(val('heightCm')):null,show_height:checked('showHeight'),weight_kg:val('weightKg')?Number(val('weightKg')):null,show_weight:checked('showWeight'),location:val('location').trim(),show_location:checked('showLocation'),occupation:val('occupation').trim(),show_occupation:checked('showOccupation')};
     const {error:xErr}=await supabase.from('profile_extras').upsert(x,{onConflict:'profile_id'});if(xErr)throw xErr;
     const keepIds=normalizedLinks.filter(l=>l.id).map(l=>l.id);
     for(const old of savedLinks){if(!keepIds.includes(old.id)){const {error}=await supabase.from('profile_links').delete().eq('id',old.id).eq('profile_id',profileId);if(error)throw error;}}
-    const toSave=normalizedLinks.map(l=>{const v={profile_id:profileId,label:l.label,url:l.url,icon:l.icon||'link',sort_order:l.sort_order,is_enabled:true};if(l.id)v.id=l.id;return v;});
+    const toSave=normalizedLinks.map(l=>{const v={profile_id:profileId,label:l.label,url:l.url,icon:l.icon||'link',sort_order:l.sort_order,is_enabled:true,is_featured:!!l.is_featured};if(l.id)v.id=l.id;return v;});
     if(toSave.length){const {error}=await supabase.from('profile_links').upsert(toSave,{onConflict:'id'});if(error)throw error;}
     else {const {error}=await supabase.from('profile_links').delete().eq('profile_id',profileId);if(error)throw error;}
-    currentAvatar=avatarUrl;selectedFile=null;$('#avatarFile').value='';setVal('avatarUrl',avatarUrl);const temp=$('#previewAvatar')?.dataset?.tempUrl;if(temp)URL.revokeObjectURL(temp);if($('#previewAvatar'))delete $('#previewAvatar').dataset.tempUrl;
+    currentAvatar=avatarUrl;selectedFile=null;$('#avatarFile').value='';setVal('avatarUrl',avatarUrl);currentCover=coverUrl;selectedCoverFile=null;$('#coverFile').value='';setVal('coverUrl',coverUrl);const temp=$('#previewAvatar')?.dataset?.tempUrl;if(temp)URL.revokeObjectURL(temp);if($('#previewAvatar'))delete $('#previewAvatar').dataset.tempUrl;
     const {data:updatedLinks,error:reloadLinksErr}=await supabase.from('profile_links').select('*').eq('profile_id',profileId).order('sort_order');if(!reloadLinksErr){savedLinks=updatedLinks||[];renderLinkRows(savedLinks);}
     const {data:updated,error:uErr}=await supabase.from('profiles').select('*').eq('id',profileId).single();if(!uErr)profile=updated;
     updatePreview();toast('اتحفظت التغييرات بنجاح ✦','success');
@@ -150,11 +168,13 @@ async function markAdminMessageRead(button){
 
 // Live preview + controls
 $('#profileForm').addEventListener('input',updatePreview);
-['birthDate','location','heightCm','weightKg','occupation','showBirthDate','showLocation','showHeight','showWeight','showOccupation','accent','accent2','background','mode','animation','card'].forEach(id=>$('#'+id).addEventListener('input',updatePreview));
+['birthDate','location','heightCm','weightKg','occupation','showBirthDate','showLocation','showHeight','showWeight','showOccupation','accent','accent2','background','mode','animation','card','linkStyle'].forEach(id=>$('#'+id).addEventListener('input',updatePreview));
 $('#avatarFile').addEventListener('change',()=>{selectedFile=$('#avatarFile').files[0]||null;if(selectedFile){setVal('avatarUrl','');}updatePreview();});
 $('#avatarUrl').addEventListener('input',()=>{selectedFile=null;$('#avatarFile').value='';updatePreview();});
+$('#coverFile').addEventListener('change',()=>{selectedCoverFile=$('#coverFile').files[0]||null;if(selectedCoverFile)setVal('coverUrl','');updatePreview();});
+$('#coverUrl').addEventListener('input',()=>{selectedCoverFile=null;$('#coverFile').value='';updatePreview();});
 $('#username').addEventListener('input',()=>{const pos=$('#username').selectionStart;setVal('username',cleanSlug(val('username')));try{$('#username').setSelectionRange(pos,pos);}catch{}updateShare();});
-$('#linkRows').addEventListener('input',updatePreview);$('#linkRows').addEventListener('click',e=>{const b=e.target.closest('.remove-link');if(!b)return;b.closest('.link-edit-row').remove();$('#emptyLinks').hidden=$$('#linkRows .link-edit-row').length>0;updatePreview();});
+$('#linkRows').addEventListener('input',updatePreview);$('#linkRows').addEventListener('click',e=>{const row=e.target.closest('.link-edit-row');if(!row)return;if(e.target.closest('.remove-link')){row.remove();$('#emptyLinks').hidden=$$('#linkRows .link-edit-row').length>0;updatePreview();return;}if(e.target.closest('.move-link-up')&&row.previousElementSibling){row.parentNode.insertBefore(row,row.previousElementSibling);updatePreview();return;}if(e.target.closest('.move-link-down')&&row.nextElementSibling){row.parentNode.insertBefore(row.nextElementSibling,row);updatePreview();}});
 $('#addLinkBtn').addEventListener('click',()=>addLinkRow({label:'',url:'',icon:''}));
 $('#presetGrid').addEventListener('click',e=>{const b=e.target.closest('[data-preset]');if(b)setPreset(b.dataset.preset);});
 $('#publishToggle').addEventListener('change',()=>syncPublish(checked('publishToggle')));$('#publishBottom').addEventListener('change',()=>syncPublish(checked('publishBottom')));
@@ -162,5 +182,14 @@ $('#saveTopBtn').addEventListener('click',saveAll);$('#saveBottomBtn').addEventL
 $('#copyLinkBtn').addEventListener('click',async()=>{const link=shareUrl();if(!link){toast('اختَر اسم مستخدم صالح واحفظه أولًا.','error');return;}try{await navigator.clipboard.writeText(link);toast('تم نسخ رابط صفحتك.','success');}catch{ $('#shareUrl').select();toast('انسخ الرابط المحدد يدويًا.');}});
 $('#qrBtn').addEventListener('click',()=>{const link=shareUrl();if(!link){toast('اختَر اسم مستخدم صالح واحفظه أولًا.','error');return;}if(!checked('publishToggle')){toast('انشر صفحتك أولًا حتى يستطيع الآخرون فتحها.','error');return;}if(!window.QRCode){toast('تعذر تحميل مولّد QR. تحقق من اتصال الإنترنت.','error');return;}const panel=$('#qrPanel');panel.hidden=false;$('#qrCode').innerHTML='';new QRCode($('#qrCode'),{text:link,width:180,height:180,colorDark:'#171a2b',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});});
 $('#supportForm').addEventListener('submit',submitTicket);$('#myAdminMessages').addEventListener('click',e=>{const b=e.target.closest('[data-read-message]');if(b)markAdminMessageRead(b);});$('#signOutBtn').addEventListener('click',signOut);
+async function loadAnalytics(){
+  const {data,error}=await supabase.rpc('get_profile_analytics',{p_days:30});
+  if(error){$('#analyticsViews').textContent='—';$('#analyticsClicks').textContent='—';$('#analyticsNote').textContent='شغّل supabase/linkora_features_upgrade.sql أولًا لتفعيل الإحصاءات.';return;}
+  $('#analyticsViews').textContent=Number(data?.views||0).toLocaleString();
+  $('#analyticsClicks').textContent=Number(data?.clicks||0).toLocaleString();
+  $('#analyticsNote').textContent='الإحصاءات لآخر 30 يومًا. قد تستغرق بعض الزيارات لحظات حتى تظهر.';
+}
+$('#refreshAnalytics').addEventListener('click',loadAnalytics);
+
 showConfigWarning();
 if(isConfigured){try{await loadPage();}catch(err){if(!String(err.message||'').includes('Sign in required'))toast(err.message||'تعذر تحميل المحرر. راجع إعداد Supabase.','error');}}

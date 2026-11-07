@@ -7,6 +7,7 @@ let extras = [];
 let tickets = [];
 let profileLinks = [];
 let adminMessages = [];
+let memberships = [];
 
 const statusText = s => s === 'published' ? 'منشورة' : s === 'in_progress' ? 'قيد المتابعة' : s === 'closed' ? 'مغلقة' : 'مسودة';
 const statusClass = s => s === 'published' ? 'published' : s === 'open' ? 'open' : s === 'in_progress' ? 'in_progress' : s === 'closed' ? 'closed' : 'draft';
@@ -22,15 +23,16 @@ function getMemberDirectory() {
 }
 
 async function loadAll() {
-  const [p, d, x, t, l, m] = await Promise.all([
+  const [p, d, x, t, l, m, mb] = await Promise.all([
     supabase.from('profiles').select('*').order('created_at', { ascending: false }),
     supabase.from('user_directory').select('*').order('created_at', { ascending: false }),
     supabase.from('profile_extras').select('*'),
     supabase.from('support_tickets').select('*').order('created_at', { ascending: false }),
     supabase.from('profile_links').select('*').order('sort_order'),
     supabase.from('admin_messages').select('*').order('created_at', { ascending: false }).limit(30),
+    supabase.from('profile_memberships').select('*'),
   ]);
-  for (const r of [p, d, x, t, l, m]) if (r.error) throw r.error;
+  for (const r of [p, d, x, t, l, m, mb]) if (r.error) throw r.error;
   // Keep the currently signed-in admin out of member-management views.
   profiles = (p.data || []).filter(profile => profile.id !== me?.id);
   directory = (d.data || []).filter(user => user.id !== me?.id);
@@ -38,6 +40,13 @@ async function loadAll() {
   tickets = t.data || [];
   profileLinks = l.data || [];
   adminMessages = m.data || [];
+  memberships = mb.data || [];
+  const myMembership = memberships.find(m => m.profile_id === me?.id) || { tier: 'free', is_verified: false, expires_at: '' };
+  $('#myMembershipTier').value = myMembership.tier || 'free';
+  $('#myMembershipVerified').checked = !!myMembership.is_verified;
+  $('#myMembershipExpiry').value = myMembership.expires_at ? new Date(myMembership.expires_at).toISOString().slice(0,10) : '';
+  $('#myMembershipBadge').textContent = myMembership.tier === 'vip' ? '✦ VIP' : myMembership.tier === 'pro' ? '✓ PRO' : 'FREE';
+  $('#myMembershipBadge').className = `member-badge ${myMembership.tier === 'vip' ? 'badge-vip' : myMembership.tier === 'pro' ? 'badge-pro' : 'badge-free'}`;
   renderStats();
   renderUsers();
   renderTickets();
@@ -79,6 +88,10 @@ function renderUsers() {
     const status = d.is_banned ? '<span class="status-pill banned">محظور</span>' : p?.is_published
       ? '<span class="status-pill published">منشورة</span>'
       : '<span class="status-pill draft">مسودة</span>';
+    const membership = memberships.find(m => m.profile_id === d.id) || { tier: 'free', is_verified: false };
+    const activeTier = membership.expires_at && new Date(membership.expires_at) <= new Date() ? 'free' : (membership.tier || 'free');
+    const tierPill = activeTier === 'vip' ? '<span class="member-badge badge-vip">✦ VIP</span>' : activeTier === 'pro' ? '<span class="member-badge badge-pro">✓ PRO</span>' : '<span class="member-badge badge-free">FREE</span>';
+    const verifiedPill = membership.is_verified ? '<span class="member-badge badge-verified" title="Linkora verified">✓</span>' : '';
     const actions = [
       p ? `<button class="btn btn-small" data-action="details" data-id="${esc(d.id)}">تفاصيل</button>` : '',
       p ? `<a class="btn btn-small" href="editor.html?user=${encodeURIComponent(d.id)}">تعديل</a>` : '',
@@ -90,7 +103,7 @@ function renderUsers() {
       `<button class="btn btn-small ${d.is_banned ? '' : 'btn-danger'}" data-action="${d.is_banned ? 'unban' : 'ban'}" data-id="${esc(d.id)}">${d.is_banned ? 'فك الحظر' : 'حظر'}</button>`,
       `<button class="btn btn-small btn-danger" data-action="delete-account" data-id="${esc(d.id)}">حذف الحساب نهائيًا</button>`,
     ].filter(Boolean).join('');
-    return `<tr><td><div class="user-cell">${avatar}<div><b>${esc(name)}</b><div class="muted small">@${esc(p?.username || '—')}</div></div></div></td><td>${esc(d.email || '—')}</td><td>${status}</td><td>${formatDate(d.created_at || p?.created_at)}</td><td><div class="table-actions">${actions}</div></td></tr>`;
+    return `<tr><td><div class="user-cell">${avatar}<div><b>${esc(name)} ${tierPill} ${verifiedPill}</b><div class="muted small">@${esc(p?.username || '—')}</div></div></div></td><td>${esc(d.email || '—')}</td><td>${status} ${tierPill}</td><td>${formatDate(d.created_at || p?.created_at)}</td><td><div class="table-actions">${actions}</div></td></tr>`;
   }).join('');
 }
 
@@ -143,10 +156,13 @@ function showDetails(id) {
   $('#detailsTitle').textContent = `تفاصيل ${p.display_name}`;
   $('#detailsBody').innerHTML = `<div class="form-grid"><div><span class="muted small">البريد</span><div>${fmt(d.email)}</div></div><div><span class="muted small">اسم المستخدم</span><div>@${fmt(p.username)}</div></div><div><span class="muted small">المسمى</span><div>${fmt(p.subtitle)}</div></div><div><span class="muted small">تاريخ التسجيل</span><div>${formatDate(d.created_at || p.created_at)}</div></div><div class="field full"><span class="muted small">الوصف</span><div style="white-space:pre-wrap">${fmt(p.bio)}</div></div><div><span class="muted small">آخر تحديث</span><div>${formatDate(p.updated_at)}</div></div><div><span class="muted small">حالة الحساب</span><div>${d.is_banned ? 'محظور' : 'نشط'}</div></div><div><span class="muted small">حالة النشر</span><div>${p.is_published ? 'منشورة' : 'مسودة'}</div></div><div><span class="muted small">تاريخ الميلاد (خاص)</span><div>${fmt(x.birth_date)}</div></div><div><span class="muted small">المكان</span><div>${fmt(x.location)}</div></div><div><span class="muted small">الطول</span><div>${x.height_cm ? esc(x.height_cm) + ' سم' : '—'}</div></div><div><span class="muted small">الوزن</span><div>${x.weight_kg ? esc(x.weight_kg) + ' كجم' : '—'}</div></div><div class="field full"><span class="muted small">الدراسة / الوظيفة</span><div>${fmt(x.occupation)}</div></div><div class="field full"><span class="muted small">ألوان الصفحة</span><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:7px"><span style="width:24px;height:24px;border-radius:8px;background:${esc(theme.accent || '#8a7cff')};border:1px solid var(--line)"></span><span>${fmt(theme.accent)}</span><span style="width:24px;height:24px;border-radius:8px;background:${esc(theme.accent2 || '#62d9cf')};border:1px solid var(--line)"></span><span>${fmt(theme.accent2)}</span><span class="muted small">${fmt(theme.animation)} · ${fmt(theme.mode)} · ${fmt(theme.card)}</span></div></div><div class="field full"><span class="muted small">روابط الصفحة (${links.length})</span><div class="ticket-list" style="margin-top:8px">${linksHtml}</div></div></div><div class="divider"></div><div class="nav-actions"><a class="btn btn-primary" href="${esc(profileUrl(p.username))}" target="_blank" rel="noopener">فتح الصفحة العامة ↗</a><a class="btn" href="editor.html?user=${encodeURIComponent(p.id)}">تعديل صفحة العضو</a><button class="btn" data-action="reset" data-id="${esc(id)}">إرسال رابط استعادة كلمة المرور</button><button class="btn" data-action="message" data-id="${esc(id)}">إرسال رسالة للعضو</button><button class="btn" data-action="delete-page" data-id="${esc(id)}">حذف الصفحة</button></div><p class="muted small">لا تطلب من العضو إرسال كلمة المرور أو مشاركة رمز الاستعادة.</p>`;
   $('#detailsBackdrop').hidden = false;
+  const membership = memberships.find(m => m.profile_id === id) || { tier: 'free', is_verified: false, expires_at: '', admin_note: '' };
+  const expiryValue = membership.expires_at ? new Date(membership.expires_at).toISOString().slice(0,10) : '';
+  $('#detailsBody').insertAdjacentHTML('beforeend', `<section class="panel membership-admin-panel" style="margin-top:18px"><h3>العضوية والتوثيق</h3><p class="muted small">تظهر الشارة بجوار الاسم في الصفحة العامة. جميع المميزات متاحة حاليًا لكل الأعضاء بغض النظر عن العضوية.</p><div class="form-grid"><div class="field"><label for="membershipTier">نوع العضوية</label><select id="membershipTier" class="control"><option value="free" ${membership.tier==='free'?'selected':''}>Free — مجانية</option><option value="pro" ${membership.tier==='pro'?'selected':''}>Pro — توثيق أزرق</option><option value="vip" ${membership.tier==='vip'?'selected':''}>VIP — شارة ذهبية</option></select></div><div class="field"><label for="membershipExpiry">تاريخ الانتهاء (اختياري)</label><input id="membershipExpiry" type="date" value="${expiryValue}"></div><div class="field full"><label class="check-row"><input id="membershipVerified" type="checkbox" ${membership.is_verified?'checked':''}> علامة Linkora Verified الزرقاء</label></div><div class="field full"><label for="membershipNote">ملاحظة داخلية للمدير</label><input id="membershipNote" maxlength="500" value="${esc(membership.admin_note||'')}" placeholder="سبب منح العضوية أو التوثيق (اختياري)"></div><div class="field full"><button class="btn btn-primary" type="button" data-action="save-membership" data-id="${esc(id)}">حفظ العضوية والتوثيق</button></div></div></section>`);
 }
 
-async function invokeAdmin(action, targetUserId) {
-  const { data, error } = await supabase.functions.invoke('linkora-admin', { body: { action, targetUserId } });
+async function invokeAdmin(action, targetUserId, extra = {}) {
+  const { data, error } = await supabase.functions.invoke('linkora-admin', { body: { action, targetUserId, ...extra } });
   if (error) {
     let detail = error.message || 'تعذر تنفيذ الإجراء الإداري.';
     try { const context = error.context; if (context?.json) { const body = await context.json(); detail = body.error || detail; } } catch { /* keep SDK message */ }
@@ -170,6 +186,20 @@ async function adminAction(action, id, button) {
   const p = profiles.find(x => x.id === id);
   const d = directory.find(x => x.id === id);
   if (action === 'details') { showDetails(id); return; }
+  if (action === 'save-membership') {
+    const tier = $('#membershipTier').value;
+    const expiry = $('#membershipExpiry').value;
+    const extra = { tier, isVerified: $('#membershipVerified').checked, expiresAt: expiry ? `${expiry}T23:59:59` : '', adminNote: $('#membershipNote').value.trim() };
+    button.disabled = true;
+    try {
+      const result = await invokeAdmin('set-membership', id, extra);
+      toast(result.message || 'تم تحديث العضوية.', 'success');
+      await loadAll();
+      showDetails(id);
+    } catch (error) { toast(error.message || 'تعذر تحديث العضوية.', 'error'); }
+    finally { button.disabled = false; }
+    return;
+  }
   if (action === 'message') { focusMessageForm(id); return; }
   if (action === 'publish') {
     if (!p) return;
@@ -273,6 +303,22 @@ $('#ticketsHost').addEventListener('click', event => {
   if (replyButton) saveTicket(replyButton);
   if (messageButton) focusMessageForm(messageButton.dataset.userId);
 });
+$('#saveMyMembership').addEventListener('click', async () => {
+  const button = $('#saveMyMembership'); button.disabled = true;
+  const expiry = $('#myMembershipExpiry').value;
+  try {
+    const result = await invokeAdmin('set-membership', me.id, {
+      tier: $('#myMembershipTier').value,
+      isVerified: $('#myMembershipVerified').checked,
+      expiresAt: expiry ? `${expiry}T23:59:59` : '',
+      adminNote: 'Platform owner membership',
+    });
+    toast(result.message || 'تم حفظ عضويتك.', 'success');
+    await loadAll();
+  } catch (error) { toast(error.message || 'تعذر حفظ عضويتك.', 'error'); }
+  finally { button.disabled = false; }
+});
+
 $('#adminMessageForm').addEventListener('submit', sendDirectMessage);
 $('#userSearch').addEventListener('input', renderUsers);
 $('#statusFilter').addEventListener('change', renderUsers);
