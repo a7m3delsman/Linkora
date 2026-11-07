@@ -65,12 +65,38 @@ Deno.serve(async (req: Request) => {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(targetUserId)) {
       return json({ error: 'Invalid target user id.' }, 400);
     }
-    if (targetUserId === caller.id) return json({ error: 'You cannot perform this action on your own admin account.' }, 400);
+    if (targetUserId === caller.id && action !== 'set-membership') return json({ error: 'You cannot perform member-management actions on your own admin account.' }, 400);
 
     const { data: targetAdmin, error: targetAdminError } = await admin
       .from('platform_admins').select('user_id').eq('user_id', targetUserId).maybeSingle();
     if (targetAdminError) throw targetAdminError;
-    if (targetAdmin) return json({ error: 'Admin accounts are protected from member-management actions.' }, 403);
+    if (targetAdmin && action !== 'set-membership') return json({ error: 'Admin accounts are protected from member-management actions.' }, 403);
+
+    if (action === 'set-membership') {
+      const tier = String(body.tier ?? 'free').toLowerCase();
+      if (!['free', 'pro', 'vip'].includes(tier)) return json({ error: 'Invalid membership tier.' }, 400);
+      const isVerified = body.isVerified === true;
+      const rawExpiry = String(body.expiresAt ?? '').trim();
+      let expiresAt: string | null = null;
+      if (rawExpiry) {
+        const parsed = new Date(rawExpiry);
+        if (Number.isNaN(parsed.getTime())) return json({ error: 'Invalid membership expiration date.' }, 400);
+        expiresAt = parsed.toISOString();
+      }
+      const adminNote = String(body.adminNote ?? '').trim().slice(0, 500);
+      const { error } = await admin.from('profile_memberships').upsert({
+        profile_id: targetUserId,
+        tier,
+        is_verified: isVerified,
+        expires_at: expiresAt,
+        admin_note: adminNote,
+        updated_by: caller.id,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'profile_id' });
+      if (error) throw error;
+      const tierLabel = tier === 'vip' ? 'VIP' : tier === 'pro' ? 'Pro' : 'Free';
+      return json({ ok: true, message: `تم تحديث العضوية إلى ${tierLabel} وتحديث حالة التوثيق.` });
+    }
 
     if (action === 'ban' || action === 'unban') {
       const duration = action === 'ban' ? '876000h' : 'none';
