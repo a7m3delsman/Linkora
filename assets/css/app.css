@@ -250,3 +250,50 @@
   .preview-stage { min-height: 590px; padding: 40px 10px 20px; }
   .background-image-field { padding: 12px; }
 }
+
+
+/* Keep the publish/share actions visible and easy to tap on mobile.
+   The general mobile navbar rule hides non-primary .nav-actions buttons;
+   this dedicated editor group must not inherit that behavior. */
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+.share-actions > .btn {
+  display: inline-flex;
+  flex: 1 1 140px;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+@media (max-width: 650px) {
+  .share-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+  .share-actions > .btn {
+    display: inline-flex !important;
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 9px 7px;
+    font-size: .82rem;
+    white-space: nowrap;
+  }
+  .share-actions > #openPageLink {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 360px) {
+  .share-actions > .btn {
+    padding-inline: 5px;
+    font-size: .76rem;
+  }
+}
