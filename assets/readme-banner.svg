@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="430" viewBox="0 0 1280 430" role="img" aria-labelledby="title desc">
+  <title id="title">Linkora — Your page. Your colors. Your identity.</title>
+  <desc id="desc">A dark, modern Linkora banner with a profile preview card and purple to teal gradient accents.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0e17"/>
+      <stop offset="0.55" stop-color="#11172a"/>
+      <stop offset="1" stop-color="#101d28"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9a85ff"/>
+      <stop offset="1" stop-color="#62d9cf"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8a7cff" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#62d9cf" stop-opacity="0.24"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20283d" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#121a2a" stop-opacity="0.96"/>
+    </linearGradient>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="35"/>
+    </filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="22" stdDeviation="20" flood-color="#000000" flood-opacity="0.34"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="430" rx="30" fill="url(#bg)"/>
+  <circle cx="190" cy="62" r="155" fill="#8a7cff" opacity="0.18" filter="url(#blur)"/>
+  <circle cx="1080" cy="360" r="190" fill="#62d9cf" opacity="0.14" filter="url(#blur)"/>
+  <path d="M0 340 C220 275 330 445 560 365 S920 250 1280 340" fill="none" stroke="url(#glow)" stroke-width="1.5" opacity="0.55"/>
+  <path d="M0 365 C250 295 360 465 600 385 S970 275 1280 360" fill="none" stroke="#7f83d9" stroke-width="1" opacity="0.18"/>
+
+  <g transform="translate(72 68)">
+    <rect width="58" height="58" rx="18" fill="#11172a" stroke="url(#accent)" stroke-width="2"/>
+    <path d="M18 13v32h29v-9H28V13z" fill="url(#accent)"/>
+    <text x="76" y="24" fill="#f5f6ff" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700" letter-spacing="1.5">LINKORA</text>
+    <text x="76" y="47" fill="#929bb3" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" letter-spacing="3">YOUR DIGITAL SPACE</text>
+  </g>
+
+  <g transform="translate(74 178)">
+    <text x="0" y="0" fill="#a9a3ff" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="2.2">ONE PAGE. A THOUSAND POSSIBILITIES.</text>
+    <text x="0" y="72" fill="#ffffff" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="56" font-weight="800" letter-spacing="-1.6">Your page.</text>
+    <text x="0" y="137" fill="url(#accent)" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="56" font-weight="800" letter-spacing="-1.6">Your identity.</text>
+    <text x="2" y="184" fill="#aeb6ca" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="19">Bring your links, profile and style together.</text>
+    <g transform="translate(0 218)">
+      <rect width="124" height="34" rx="17" fill="#24213e" stroke="#8a7cff" stroke-opacity="0.75"/>
+      <text x="62" y="22" fill="#d9d3ff" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="600">LIVE EDITOR</text>
+      <rect x="136" width="118" height="34" rx="17" fill="#163237" stroke="#62d9cf" stroke-opacity="0.6"/>
+      <text x="195" y="22" fill="#c9fff8" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="600">ONE LINK</text>
+      <rect x="266" width="132" height="34" rx="17" fill="#202a3a" stroke="#70839e" stroke-opacity="0.65"/>
+      <text x="332" y="22" fill="#dce5f2" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="600">YOUR STYLE</text>
+    </g>
+  </g>
+
+  <g transform="translate(760 53)" filter="url(#shadow)">
+    <rect x="0" y="0" width="440" height="324" rx="25" fill="url(#card)" stroke="#73809b" stroke-opacity="0.28"/>
+    <path d="M25 0h390a25 25 0 0 1 25 25v29H0V25A25 25 0 0 1 25 0z" fill="#ffffff" fill-opacity="0.035"/>
+    <circle cx="27" cy="27" r="5" fill="#ff7187"/>
+    <circle cx="46" cy="27" r="5" fill="#f5c66b"/>
+    <circle cx="65" cy="27" r="5" fill="#6ed9b0"/>
+    <text x="220" y="31" fill="#79859e" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" letter-spacing="1.6">LINKORA / YOUR PAGE</text>
+    <rect x="18" y="72" width="404" height="232" rx="19" fill="#0c1220" stroke="#94a0bb" stroke-opacity="0.14"/>
+    <rect x="18" y="72" width="404" height="70" rx="19" fill="url(#glow)" opacity="0.9"/>
+    <path d="M18 123h404v19H18z" fill="#151c2c" opacity="0.4"/>
+    <circle cx="220" cy="153" r="40" fill="#172033" stroke="url(#accent)" stroke-width="3"/>
+    <circle cx="220" cy="153" r="31" fill="#202b42"/>
+    <path d="M207 132v42h29v-10h-18v-32z" fill="url(#accent)"/>
+    <text x="220" y="215" fill="#f4f6ff" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="700">Your name here</text>
+    <text x="220" y="237" fill="#97a3bb" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11">Creative mind · Digital creator</text>
+    <g transform="translate(43 255)">
+      <rect width="354" height="28" rx="9" fill="#202a3d" stroke="#8a7cff" stroke-opacity="0.23"/>
+      <text x="17" y="18" fill="#dfe4f4" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11">✦  Instagram</text>
+      <text x="335" y="18" fill="#8f99b1" text-anchor="end" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">↗</text>
+    </g>
+    <g transform="translate(43 290)">
+      <rect width="354" height="1" fill="#6e7b96" opacity="0.2"/>
+    </g>
+  </g>
+  <text x="1200" y="402" fill="#7f8aa2" text-anchor="end" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" letter-spacing="1.5">LINKORA · BUILT AROUND YOU</text>
+</svg>
