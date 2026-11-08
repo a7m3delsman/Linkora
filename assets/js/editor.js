@@ -26,40 +26,44 @@ function normalizeLinkTarget(value){
 function collectFollowerCounts(){
  const counts={};
  $$('#linkRows .link-edit-row').forEach(row=>{
-  const rawUrl=normalizeLinkTarget(row.querySelector('.link-url-input')?.value||'');const url=safeUrl(rawUrl)||rawUrl;
+  const rawUrl=normalizeLinkTarget(row.querySelector('.link-url-input')?.value||'');
+  const url=safeUrl(rawUrl)||rawUrl;
   if(!url)return;
   const raw=row.querySelector('.link-follower-input')?.value??'';
   const show=!!row.querySelector('.link-show-followers-input')?.checked;
-  const mode=row.querySelector('.link-followers-mode')?.value==='auto'?'auto':'manual';
-  if(raw!==''||show||mode==='auto')counts[url]={count:raw===''?null:Math.max(0,Math.floor(Number(raw)||0)),show,mode};
+  if(raw!==''||show)counts[url]={count:raw===''?null:Math.max(0,Math.floor(Number(raw)||0)),show,mode:'manual'};
  });
  return counts;
 }
 
-function currentTheme(){ return { accent:val('accent')||presets.aurora.accent, accent2:val('accent2')||presets.aurora.accent2, background:val('background')||presets.aurora.background, mode:val('mode'), animation:val('animation'), card:val('card'), linkCardStyle:val('linkCardStyle')||'glass', linkAnimation:val('linkAnimation')||'lift', pageBackgroundUrl:val('pageBackgroundUrl').trim(), frameBackgroundUrl:val('frameBackgroundUrl').trim(), cardLanguage:val('cardLanguage')||'ar', enhanced:checked('enhancedCard'), followerCounts:collectFollowerCounts() }; }
+function currentTheme(){ return { accent:val('accent')||presets.aurora.accent, accent2:val('accent2')||presets.aurora.accent2, background:val('background')||presets.aurora.background, mode:val('mode'), animation:val('animation'), card:val('card'), linkCardStyle:val('linkCardStyle')||'glass', linkAnimation:val('linkAnimation')||'lift', pageBackgroundUrl:val('pageBackgroundUrl').trim(), frameBackgroundUrl:val('frameBackgroundUrl').trim(), cardLanguage:val('cardLanguage')||'ar', enhanced:checked('enhancedCard'), enhancePageColor:val('enhancePageColor')||'#f4f2ee', enhanceCardColor:val('enhanceCardColor')||'#65718e', enhanceButtonColor:val('enhanceButtonColor')||'#a96f50', enhanceTextColor:val('enhanceTextColor')||'#273450', enhanceButtonTextColor:val('enhanceButtonTextColor')||'#fffaf5', enhanceIconColor:val('enhanceIconColor')||'#273450', followerCounts:collectFollowerCounts() }; }
 function shareUrl(){ const slug=cleanSlug(val('username')); return slug ? `${new URL('p.html',location.href).href}?u=${encodeURIComponent(slug)}` : ''; }
 function updateShare(){ const url=shareUrl(); $('#shareUrl').value=url; $('#openPublicBtn').href=url || 'p.html'; $('#openPageLink').href=url || 'p.html'; }
 function syncPublish(v){ $('#publishToggle').checked=v; $('#publishBottom').checked=v; }
 function updatePreview(){
   $('#bioCount').textContent=val('bio').length;
   $('#previewName').textContent=val('displayName').trim()||'اسمك هنا';
+  $('#previewUsername').textContent=val('username').trim()?'@'+cleanSlug(val('username')):'';
+  $('#previewUsername').hidden=!checked('enhancedCard')||!val('username').trim();
   $('#previewSubtitle').textContent=val('subtitle').trim()||'سطر تعريفي قصير';
   $('#previewBio').textContent=val('bio').trim()||'اكتب نبذة صغيرة عنك هنا…';
-  const t=currentTheme(), p=$('#previewProfile');p.dir=t.cardLanguage==='en'?'ltr':'rtl';p.classList.toggle('enhanced-layout',!!t.enhanced);
+  const t=currentTheme(), p=$('#previewProfile');p.dir=t.cardLanguage==='en'?'ltr':'rtl';p.classList.toggle('enhanced-layout',!!t.enhanced);$('#enhancePalette').hidden=!t.enhanced;
   p.style.setProperty('--pbg', t.card==='solid' ? t.background : (t.mode==='light' ? '#f8f8ff' : t.background));
   p.style.setProperty('--ptxt',t.mode==='light'?'#22283b':'#f4f5ff');
-  p.style.setProperty('--paccent',t.accent);p.style.setProperty('--paccent2',t.accent2);
+  p.style.setProperty('--paccent',t.accent);p.style.setProperty('--paccent2',t.accent2);p.style.setProperty('--enhance-page',t.enhancePageColor);p.style.setProperty('--enhance-card',t.enhanceCardColor);p.style.setProperty('--enhance-button',t.enhanceButtonColor);p.style.setProperty('--enhance-text',t.enhanceTextColor);p.style.setProperty('--enhance-button-text',t.enhanceButtonTextColor);p.style.setProperty('--enhance-icon',t.enhanceIconColor);
   const pageBg = selectedPageBackgroundFile ? pageBackgroundPreviewUrl : safeUrl(val('pageBackgroundUrl'));
   const frameBg = selectedFrameBackgroundFile ? frameBackgroundPreviewUrl : safeUrl(val('frameBackgroundUrl'));
   const stage = $('.preview-stage');
-  stage.style.backgroundImage = pageBg ? `linear-gradient(rgba(5,8,17,.28),rgba(5,8,17,.28)),url("${pageBg}")` : '';
-  stage.style.backgroundSize = 'cover'; stage.style.backgroundPosition = 'center';
+  stage.classList.toggle('enhanced-preview-stage',!!t.enhanced);
+  stage.style.backgroundImage = pageBg ? `linear-gradient(rgba(5,8,17,.16),rgba(5,8,17,.16)),url("${pageBg}")` : '';
+  stage.style.backgroundColor=t.enhanced?t.enhancePageColor:'';
+  stage.style.backgroundSize = pageBg ? 'cover' : (t.enhanced ? '16px 16px' : 'cover'); stage.style.backgroundPosition = 'center';
   p.style.setProperty('--preview-card-image', frameBg ? `url("${frameBg}")` : 'none');
   p.style.setProperty('--preview-card-overlay', frameBg ? (t.mode==='light'?'rgba(255,255,255,.36)':'rgba(7,10,18,.42)') : 'transparent');
   p.classList.toggle('no-anim',t.animation==='none');p.classList.toggle('card-outline',t.card==='outline');
   p.classList.remove('anim-aurora','anim-float','anim-glow','anim-pulse','anim-none');p.classList.add(`anim-${t.animation||'aurora'}`);
   if(t.animation==='float') p.style.setProperty('--angle','0deg');
-  p.style.background=t.card==='outline'?'transparent':(t.card==='glass'?(t.mode==='light'?'rgba(248,248,255,.88)':'rgba(18,23,37,.82)'):t.background);
+  p.style.background=t.enhanced?t.enhanceCardColor:(t.card==='outline'?'transparent':(t.card==='glass'?(t.mode==='light'?'rgba(248,248,255,.88)':'rgba(18,23,37,.82)'):t.background));
   const avatar=$('#previewAvatar'), src=val('avatarUrl').trim();
   if(selectedFile){
     if(!avatar.dataset.tempUrl) avatar.dataset.tempUrl=URL.createObjectURL(selectedFile);
@@ -78,7 +82,7 @@ function updatePreview(){
   } else if(coverSrc && safeUrl(coverSrc)) { cover.style.backgroundImage = `url("${safeUrl(coverSrc)}")`; cover.hidden = false; }
   else if(t.enhanced && $('#previewAvatar')?.tagName==='IMG') { cover.style.backgroundImage = `url("${$('#previewAvatar').src}")`; cover.hidden = false; }
   else if(t.enhanced && src && safeUrl(src)) { cover.style.backgroundImage = `url("${safeUrl(src)}")`; cover.hidden = false; }
-  else { cover.style.backgroundImage = ''; cover.hidden = true; }
+  else { cover.style.backgroundImage = 'none'; cover.hidden = true; }
   const facts=[];
   if(checked('showBirthDate') && val('birthDate')) { const age=ageFromDate(val('birthDate'));if(age!==null)facts.push(t.cardLanguage==='en'?`${age} years old`:`${age} سنة`); }
   if(checked('showLocation') && val('location').trim()) facts.push(`⌖ ${val('location').trim()}`);
@@ -92,7 +96,7 @@ function updatePreview(){
   const cards=rows.filter(l=>l.show_as_card), icons=rows.filter(l=>l.show_as_icon);
   const cardHost=$('#previewCards');cardHost.className=`preview-links style-${t.linkCardStyle||'glass'} motion-${t.linkAnimation||'lift'}`;
   cardHost.innerHTML=cards.map(l=>{const count=l.show_follower_count&&l.follower_count!==''?'<small class="link-followers">'+Number(l.follower_count).toLocaleString('en-US')+' '+(t.cardLanguage==='en'?'Followers':'متابع')+'</small>':'';return `<div class="preview-link ${l.is_featured?'featured':''}">${l.is_featured?'<span class="featured-label">✦ Featured</span>':''}<span class="preview-link-main">${renderLinkIcon(l.url,l.label,l.icon,'link-icon-preview')}<span>${esc(l.label)}${count}</span></span><span class="preview-external">↗</span></div>`;}).join('');
-  $('#previewSocialIcons').innerHTML=icons.map(l=>`<span class="preview-social-icon ${l.is_featured?'featured':''}" title="${esc(l.label)}" aria-label="${esc(l.label)}">${renderLinkIcon(l.url,l.label,l.icon,'link-icon-preview')}</span>`).join('');
+  $('#previewSocialIcons').innerHTML=icons.map(l=>{const count=l.show_as_card===false&&l.show_follower_count&&l.follower_count!==''?'<small class="social-icon-followers">'+Number(l.follower_count).toLocaleString('en-US')+'</small>':'';return `<span class="preview-social-icon ${l.is_featured?'featured':''}" title="${esc(l.label)}" aria-label="${esc(l.label)}"><span class="social-icon-mark">${renderLinkIcon(l.url,l.label,l.icon,'link-icon-preview')}</span>${count}</span>`;}).join('');
   $('#previewCards').hidden=cards.length===0;$('#previewSocialIcons').hidden=icons.length===0;$('#previewLinksEmpty').hidden=rows.length>0;
   updateShare();
 }
@@ -107,13 +111,12 @@ function renderLinkRows(links=[]){
     const followerMeta=(window.__linkoraFollowerCounts||{})[l.url||'']||{};
     const followerCount=followerMeta.count??'';
     const showFollowers=followerMeta.show===true;
-    const followersMode=followerMeta.mode==='auto'?'auto':'manual';
-    row.innerHTML=`<div class="link-label-wrap"><input class="link-label-input" maxlength="70" aria-label="اسم الرابط" placeholder="Instagram" value="${esc(l.label||'')}"><label class="link-featured-label"><input class="link-featured-input" type="checkbox" ${l.is_featured?'checked':''}> تمييز الرابط ✦</label><div class="link-display-options"><label><input class="link-show-card-input" type="checkbox" ${showCard?'checked':''}> بطاقة مستطيلة</label><label><input class="link-show-icon-input" type="checkbox" ${showIcon?'checked':''}> أيقونة دائرية</label><label class="link-enabled-option"><input class="link-enabled-input" type="checkbox" ${isEnabled?'checked':''}> إظهار الرابط</label></div></div><input class="link-url-input" type="text" inputmode="url" aria-label="عنوان الرابط أو البريد أو الهاتف" placeholder="https://… أو name@example.com أو +2010…" value="${esc(l.url||'')}"><div class="link-icon-control">${renderLinkIcon(l.url||'',l.label||'',l.icon||'','link-icon-editor')}<input class="link-icon-input" maxlength="24" aria-label="رمز مخصص اختياري" placeholder="تلقائي" value="${esc(autoValue)}"></div><div class="link-row-actions"><button type="button" class="btn btn-small move-link-up" aria-label="تحريك لأعلى">↑</button><button type="button" class="btn btn-small move-link-down" aria-label="تحريك لأسفل">↓</button><button type="button" class="btn btn-danger btn-small remove-link" aria-label="حذف الرابط">×</button></div><div class="link-followers-settings"><label>عدد المتابعين <input class="link-follower-input" type="number" inputmode="numeric" min="0" step="1" placeholder="مثال: 12500" value="${esc(followerCount)}"></label><label class="link-show-followers-option"><input class="link-show-followers-input" type="checkbox" ${showFollowers?'checked':''}> إظهار العدد</label><label class="link-followers-mode-label">طريقة التحديث<select class="link-followers-mode"><option value="manual" ${followersMode==='manual'?'selected':''}>يدوي</option><option value="auto" ${followersMode==='auto'?'selected':''}>تلقائي (بعد ربط API)</option></select></label></div>`;
+    row.innerHTML=`<div class="link-label-wrap"><input class="link-label-input" maxlength="70" aria-label="اسم الرابط" placeholder="Instagram" value="${esc(l.label||'')}"><label class="link-featured-label"><input class="link-featured-input" type="checkbox" ${l.is_featured?'checked':''}> تمييز الرابط ✦</label><div class="link-display-options"><label><input class="link-show-card-input" type="checkbox" ${showCard?'checked':''}> بطاقة مستطيلة</label><label><input class="link-show-icon-input" type="checkbox" ${showIcon?'checked':''}> أيقونة دائرية</label><label class="link-enabled-option"><input class="link-enabled-input" type="checkbox" ${isEnabled?'checked':''}> إظهار الرابط</label></div></div><input class="link-url-input" type="text" inputmode="url" aria-label="عنوان الرابط أو البريد أو الهاتف" placeholder="https://… أو name@example.com أو +2010…" value="${esc(l.url||'')}"><div class="link-icon-control">${renderLinkIcon(l.url||'',l.label||'',l.icon||'','link-icon-editor')}<input class="link-icon-input" maxlength="24" aria-label="رمز مخصص اختياري" placeholder="تلقائي" value="${esc(autoValue)}"></div><div class="link-row-actions"><button type="button" class="btn btn-small move-link-up" aria-label="تحريك لأعلى">↑</button><button type="button" class="btn btn-small move-link-down" aria-label="تحريك لأسفل">↓</button><button type="button" class="btn btn-danger btn-small remove-link" aria-label="حذف الرابط">×</button></div><div class="link-followers-settings"><label>عدد المتابعين <input class="link-follower-input" type="number" inputmode="numeric" min="0" step="1" placeholder="مثال: 12500" value="${esc(followerCount)}"></label><label class="link-show-followers-option"><input class="link-show-followers-input" type="checkbox" ${showFollowers?'checked':''}> إظهار العدد</label><span class="link-followers-info">طريقة التحديث <b class="followers-manual-badge">يدوي حاليًا</b></span></div>`;
     host.append(row);
   });
   $('#emptyLinks').hidden=links.length>0;
 }
-function collectLinkRows(){return $$('#linkRows .link-edit-row').map(row=>({id:row.dataset.linkId,label:row.querySelector('.link-label-input').value,url:normalizeLinkTarget(row.querySelector('.link-url-input').value),icon:row.querySelector('.link-icon-input').value,is_featured:row.querySelector('.link-featured-input').checked,is_enabled:row.querySelector('.link-enabled-input')?.checked!==false,show_as_card:row.querySelector('.link-show-card-input').checked,show_as_icon:row.querySelector('.link-show-icon-input').checked,follower_count:row.querySelector('.link-follower-input')?.value??'',show_follower_count:!!row.querySelector('.link-show-followers-input')?.checked,followers_mode:row.querySelector('.link-followers-mode')?.value||'manual'}));}
+function collectLinkRows(){return $$('#linkRows .link-edit-row').map(row=>({id:row.dataset.linkId,label:row.querySelector('.link-label-input').value,url:normalizeLinkTarget(row.querySelector('.link-url-input').value),icon:row.querySelector('.link-icon-input').value,is_featured:row.querySelector('.link-featured-input').checked,is_enabled:row.querySelector('.link-enabled-input')?.checked!==false,show_as_card:row.querySelector('.link-show-card-input').checked,show_as_icon:row.querySelector('.link-show-icon-input').checked,follower_count:row.querySelector('.link-follower-input')?.value??'',show_follower_count:!!row.querySelector('.link-show-followers-input')?.checked}));}
 function addLinkRow(link={}){const current=collectLinkRows();current.push({is_enabled:true,show_as_card:true,show_as_icon:false,...link});renderLinkRows(current);updatePreview();}
 function setPreset(name){const p=presets[name];if(!p)return;Object.entries(p).forEach(([k,v])=>setVal(k,v));$$('[data-preset]').forEach(b=>b.classList.toggle('active',b.dataset.preset===name));updatePreview();}
 async function loadPage(){
@@ -134,7 +137,7 @@ async function loadPage(){
   setVal('displayName',p.display_name);setVal('username',p.username);setVal('subtitle',p.subtitle);setVal('bio',p.bio);currentAvatar=p.avatar_url||'';setVal('avatarUrl',currentAvatar);setVal('coverUrl',currentCover);
   setVal('birthDate',x?.birth_date||'');setVal('location',x?.location||'');setVal('heightCm',x?.height_cm??'');setVal('weightKg',x?.weight_kg??'');setVal('occupation',x?.occupation||'');
   ['showBirthDate','showLocation','showHeight','showWeight','showOccupation'].forEach(k=>$('#'+k).checked=!!x?.[({showBirthDate:'show_birth_date',showLocation:'show_location',showHeight:'show_height',showWeight:'show_weight',showOccupation:'show_occupation'})[k]]);
-  const t={...presets.aurora,...(p.theme||{})};['accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation'].forEach(k=>setVal(k,t[k]||({linkCardStyle:'glass',linkAnimation:'lift'}[k]||presets.aurora[k]||'')));setVal('pageBackgroundUrl',t.pageBackgroundUrl||'');setVal('frameBackgroundUrl',t.frameBackgroundUrl||'');setVal('cardLanguage',t.cardLanguage||'ar');$('#enhancedCard').checked=!!t.enhanced;window.__linkoraFollowerCounts=t.followerCounts||{};syncPublish(!!p.is_published);renderLinkRows(savedLinks);updatePreview();
+  const t={...presets.aurora,...(p.theme||{})};['accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation'].forEach(k=>setVal(k,t[k]||({linkCardStyle:'glass',linkAnimation:'lift'}[k]||presets.aurora[k]||'')));setVal('pageBackgroundUrl',t.pageBackgroundUrl||'');setVal('frameBackgroundUrl',t.frameBackgroundUrl||'');setVal('cardLanguage',t.cardLanguage||'ar');setVal('enhancePageColor',t.enhancePageColor||'#f4f2ee');setVal('enhanceCardColor',t.enhanceCardColor||'#65718e');setVal('enhanceButtonColor',t.enhanceButtonColor||'#a96f50');setVal('enhanceTextColor',t.enhanceTextColor||'#273450');setVal('enhanceButtonTextColor',t.enhanceButtonTextColor||'#fffaf5');setVal('enhanceIconColor',t.enhanceIconColor||'#273450');$('#enhancedCard').checked=!!t.enhanced;window.__linkoraFollowerCounts=t.followerCounts||{};syncPublish(!!p.is_published);renderLinkRows(savedLinks);updatePreview();
   if(p.theme?.accent) $$('[data-preset]').forEach(b=>b.classList.remove('active'));
   $('#saveTopBtn').disabled=false; await loadTickets(); if(!supportMode) await loadAdminMessages(); if(!supportMode) await loadAnalytics();
 }
@@ -230,7 +233,7 @@ async function markAdminMessageRead(button){
 
 // Live preview + controls
 $('#profileForm').addEventListener('input',updatePreview);
-['birthDate','location','heightCm','weightKg','occupation','showBirthDate','showLocation','showHeight','showWeight','showOccupation','accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation','pageBackgroundUrl','frameBackgroundUrl','cardLanguage','enhancedCard'].forEach(id=>$('#'+id).addEventListener('input',updatePreview));$('#cardLanguage').addEventListener('change',updatePreview);$('#enhancedCard').addEventListener('change',updatePreview);
+['birthDate','location','heightCm','weightKg','occupation','showBirthDate','showLocation','showHeight','showWeight','showOccupation','accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation','pageBackgroundUrl','frameBackgroundUrl','cardLanguage','enhancedCard','enhancePageColor','enhanceCardColor','enhanceButtonColor','enhanceTextColor','enhanceButtonTextColor','enhanceIconColor'].forEach(id=>$('#'+id).addEventListener('input',updatePreview));$('#cardLanguage').addEventListener('change',updatePreview);$('#enhancedCard').addEventListener('change',updatePreview);
 $('#avatarFile').addEventListener('change',()=>{selectedFile=$('#avatarFile').files[0]||null;if(selectedFile){setVal('avatarUrl','');}updatePreview();});
 $('#avatarUrl').addEventListener('input',()=>{selectedFile=null;$('#avatarFile').value='';updatePreview();});
 $('#coverFile').addEventListener('change',()=>{selectedCoverFile=$('#coverFile').files[0]||null;if(selectedCoverFile){setVal('coverUrl','');const cover=$('#previewCover');if(cover.dataset.tempUrl){clearPreviewObjectUrl(cover.dataset.tempUrl);delete cover.dataset.tempUrl;}}updatePreview();});

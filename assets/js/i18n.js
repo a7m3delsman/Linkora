@@ -174,6 +174,14 @@
     'تم نسخ رابط صفحتك.':'Your page link has been copied.','اختَر اسم مستخدم صالح واحفظه أولًا.':'Choose a valid username and save it first.',
     'الإحصاءات لآخر 30 يومًا. قد تستغرق بعض الزيارات لحظات حتى تظهر.':'Analytics for the last 30 days. Some visits may take a moment to appear.'
   });
+  Object.assign(translations, {
+    'تخصيص ألوان Enhance':'Customize Enhance colors',
+    'غيّر ألوان الخلفية والكارت والروابط والنصوص، وستظهر فورًا في المعاينة.':'Change the page, card, button, and text colors and see them instantly in the preview.',
+    'خلفية الصفحة':'Page background','لون الكارت':'Card color','لون الأزرار':'Button color',
+    'لون النص':'Text color','لون نص الأزرار':'Button text color','لون الأيقونات':'Icon color',
+    'يدوي حاليًا':'Manual for now',
+    'عدد المتابعين يُدخل يدويًا حاليًا. الربط التلقائي غير مفعّل بعد؛ كل منصة تحتاج تطبيق OAuth وصلاحيات API رسمية وربطًا آمنًا على الخادم.':'Follower counts are manual for now. Automatic syncing is not enabled; each platform needs an approved OAuth app, API permissions, and a secure server-side integration.'
+  });
   for (const [ar,en] of Object.entries(translations)) if (!reverse.has(en)) reverse.set(en,ar);
   const langKey='linkora-language';
   const getLang=()=>localStorage.getItem(langKey)==='en'?'en':'ar';
