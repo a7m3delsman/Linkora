@@ -1,0 +1,178 @@
+/* Linkora editor fixes: keep link controls inside their row and align the live preview. */
+.link-edit-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) 116px 92px;
+  gap: 8px;
+  align-items: start;
+  min-width: 0;
+}
+
+.link-edit-row .link-label-wrap,
+.link-edit-row .link-url-input,
+.link-edit-row .link-icon-control {
+  min-width: 0;
+}
+
+.link-edit-row .link-icon-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.link-edit-row .link-icon-control .link-icon-editor {
+  flex: 0 0 34px;
+  width: 34px;
+  min-width: 34px;
+}
+
+.link-edit-row .link-icon-control .link-icon-input {
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.link-edit-row .link-row-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 92px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.link-edit-row .link-row-actions .btn {
+  display: inline-flex;
+  flex: 0 0 28px;
+  width: 28px;
+  min-width: 28px;
+  max-width: 28px;
+  height: 32px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.link-edit-row .link-followers-settings {
+  grid-column: 1 / -1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.link-edit-row .link-followers-settings > label {
+  min-width: 0;
+}
+
+.link-edit-row .link-followers-settings > label:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.link-edit-row .link-followers-settings .link-follower-input {
+  width: min(190px, 100%);
+  min-width: 0;
+}
+
+.preview-links {
+  width: 100%;
+  min-width: 0;
+}
+
+.preview-links .preview-link {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.preview-links .preview-link-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  direction: ltr;
+}
+
+.preview-links .preview-link-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+  text-align: start;
+  overflow-wrap: anywhere;
+  unicode-bidi: plaintext;
+}
+
+.preview-links .preview-link-copy > span:first-child {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.preview-links .preview-link-copy .link-followers {
+  display: block;
+  margin: 0;
+  max-width: 100%;
+  font-size: .72rem;
+  line-height: 1.35;
+  opacity: .76;
+  overflow-wrap: anywhere;
+}
+
+.preview-links .preview-external {
+  flex: 0 0 auto;
+}
+
+@media (min-width: 651px) and (max-width: 1050px) {
+  .link-edit-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) 104px 92px;
+  }
+}
+
+@media (max-width: 650px) {
+  .link-edit-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .link-edit-row .link-label-wrap {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .link-edit-row .link-icon-control {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+  }
+
+  .link-edit-row .link-url-input {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .link-edit-row .link-row-actions {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: end;
+    justify-content: flex-end;
+    width: 92px;
+  }
+
+  .link-edit-row .link-followers-settings {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
+
+  .link-edit-row .link-followers-settings .link-follower-input {
+    width: min(180px, 100%);
+  }
+}
