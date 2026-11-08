@@ -151,6 +151,29 @@
     'حجم صورة الخلفية أكبر من 5 ميجابايت.':'Background image exceeds 5 MB.',
     'نوع صورة الخلفية غير مدعوم. استخدم JPG أو PNG أو WEBP أو GIF.':'Unsupported background image type. Use JPG, PNG, WEBP, or GIF.'
   });
+  Object.assign(translations, {
+    'لغة محتويات الكارت':'Card content language','العربية — RTL':'Arabic — RTL','English — LTR':'English — LTR',
+    'تغيّر لغة عناصر Linkora واتجاه الكارت فقط. الاسم والوصف وتسميات روابطك تظل كما كتبتها.':'Changes Linkora interface labels and card direction only. Your name, bio, and link labels stay exactly as you wrote them.',
+    'Enhance — التصميم المحسّن':'Enhance — refined layout','تصميم بصري راقٍ بصورة عريضة وأزرار مميزة وأيقونات اجتماعية، مستوحى من الصورة المرجعية.':'A refined layout with a wide image, distinctive buttons, and social icons, inspired by your reference image.',
+    'تقدر كمان تخفي الرابط بالكامل وتضيف عدد المتابعين بجواره.':'You can also hide a link completely and show its follower count beside it.',
+    'عدد المتابعين يمكن إدخاله يدويًا الآن. التحديث التلقائي يحتاج ربط التطبيق واعتماد صلاحيات API الرسمية لكل منصة.':'Follower counts can be entered manually now. Automatic updates require a separate app connection and approved official API permissions for each platform.',
+    'إظهار الرابط':'Show link','عدد المتابعين':'Follower count','إظهار العدد':'Show count','طريقة التحديث':'Update method','يدوي':'Manual',
+    'تلقائي (بعد ربط API)':'Automatic (after API connection)','مثال: 12500':'Example: 12500',
+    'أدخل رابطًا أو بريدًا إلكترونيًا أو رقم هاتف صحيحًا.':'Enter a valid link, email address, or phone number.',
+    'Card content language':'لغة محتويات الكارت','Arabic — RTL':'العربية — RTL','English — LTR':'English — LTR',
+    'Show link':'إظهار الرابط','Follower count':'عدد المتابعين','Show count':'إظهار العدد','Update method':'طريقة التحديث',
+    'Manual':'يدوي','Automatic (after API connection)':'تلقائي (بعد ربط API)',
+    'No links have been added to this page yet.':'لم تتم إضافة روابط إلى هذه الصفحة بعد.',
+    'Created with Linkora':'صُنع باستخدام Linkora','years old':'سنة','Followers':'متابع',
+    'معاينة مباشرة':'Live preview','شكل الصفحة كما سيظهر للزوار':'How your page looks to visitors',
+    'عرض على الموبايل':'View on mobile','امسح الكود لفتح الصفحة على هاتفك':'Scan to open this profile on your phone',
+    'اسم الرابط':'Link label','عنوان الرابط':'Link address','حذف الرابط':'Remove link','تحريك لأعلى':'Move up','تحريك لأسفل':'Move down',
+    'اكتب الاسم الظاهر.':'Enter a display name.','سجّل الدخول أولًا.':'Please sign in first.',
+    'أكمل اسم الرابط وعنوانه، أو احذف الصف الفارغ.':'Complete the link label and address, or remove the empty row.',
+    'انشر صفحتك أولًا حتى يستطيع الآخرون فتحها.':'Publish your page first so others can open it.',
+    'تم نسخ رابط صفحتك.':'Your page link has been copied.','اختَر اسم مستخدم صالح واحفظه أولًا.':'Choose a valid username and save it first.',
+    'الإحصاءات لآخر 30 يومًا. قد تستغرق بعض الزيارات لحظات حتى تظهر.':'Analytics for the last 30 days. Some visits may take a moment to appear.'
+  });
   for (const [ar,en] of Object.entries(translations)) if (!reverse.has(en)) reverse.set(en,ar);
   const langKey='linkora-language';
   const getLang=()=>localStorage.getItem(langKey)==='en'?'en':'ar';
@@ -224,9 +247,7 @@
     const toggle=document.querySelector('[data-lang-toggle]');if(toggle){toggle.textContent=lang==='ar'?'EN':'عربي';toggle.setAttribute('aria-label',lang==='ar'?'Switch to English':'التبديل إلى العربية');}
   }
   function addToggle(){
-    const path=location.pathname;
-    const isHome=path.endsWith('/')||path.endsWith('/index.html')||path==='index.html';
-    if(!isHome||document.body.classList.contains('public-body')||document.querySelector('[data-lang-toggle]'))return;
+    if(document.body.classList.contains('public-body')||document.querySelector('[data-lang-toggle]'))return;
     const button=document.createElement('button');button.type='button';button.className='btn btn-small lang-toggle';button.dataset.langToggle='true';button.addEventListener('click',()=>{localStorage.setItem(langKey,getLang()==='ar'?'en':'ar');apply(document);});
     const host=document.querySelector('.nav-actions');if(host)host.append(button);else{button.classList.add('floating-lang-toggle');document.body.append(button);}apply(document);
   }

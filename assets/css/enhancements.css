@@ -1,0 +1,49 @@
+/* Linkora — Enhance theme, bilingual card, followers labels and desktop QR */
+.profile-display-settings{align-items:center;margin:14px 0 18px;padding:16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025)}
+.enhance-toggle{align-items:center;min-height:54px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-radius:13px;background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 10%,transparent),color-mix(in srgb,var(--accent-2) 8%,transparent))}
+.enhance-toggle b{color:var(--text);font-size:.95rem}.enhance-toggle small{display:block;line-height:1.6}
+.followers-hint{margin:10px 0 14px;line-height:1.7}
+.link-edit-row{grid-template-columns:minmax(0,1fr) minmax(150px,1.2fr) 70px 42px}
+.link-display-options{display:flex;flex-wrap:wrap;gap:8px 13px;margin-top:8px}
+.link-display-options label,.link-followers-settings label{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.78rem;white-space:normal}
+.link-display-options input,.link-followers-settings input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent)}
+.link-enabled-option{color:var(--accent-2)!important;font-weight:700}
+.link-followers-settings{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:end;gap:10px 16px;padding-top:9px;border-top:1px solid var(--line)}
+.link-followers-settings>label:first-child{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:150px}
+.link-followers-settings input[type=number],.link-followers-settings select{min-width:130px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:rgba(5,8,17,.3);color:var(--text)}
+.link-followers-mode-label{display:flex!important;flex-direction:column;align-items:stretch!important;gap:5px!important}
+.link-followers{display:block;margin-top:3px;font-size:.74rem;font-weight:650;letter-spacing:.01em;opacity:.82;line-height:1.2}
+.preview-link-main>span:last-child{min-width:0}.preview-link-main .link-followers{color:inherit;opacity:.8}
+.preview-profile.enhanced-layout{--paccent:#b47a5a!important;--paccent2:#dfb497!important;width:min(350px,100%);min-height:550px;overflow:hidden;padding:285px 20px 23px;border:1px solid rgba(255,255,255,.25);border-radius:25px;background:#5d698b!important;text-align:center}
+.preview-profile.enhanced-layout:before{display:none}.preview-profile.enhanced-layout:after{inset:1px;border-radius:24px;background:linear-gradient(180deg,transparent 0,rgba(20,30,54,.08) 38%,#5d698b 53%)}
+.preview-profile.enhanced-layout #previewCover{position:absolute;inset:0 0 auto;height:285px;background-size:cover;background-position:center 25%;z-index:-1;border-radius:24px 24px 0 0}
+.preview-profile.enhanced-layout .preview-avatar,.preview-profile.enhanced-layout .preview-avatar-fallback{width:0;height:0;min-height:0;border:0;margin:0;opacity:0;overflow:hidden}
+.preview-profile.enhanced-layout h3{position:relative;color:#f8f7f4;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.preview-profile.enhanced-layout .subtitle,.preview-profile.enhanced-layout .bio{color:#f5f3f0}
+.preview-profile.enhanced-layout .preview-link{background:#a96f50;border:0;border-radius:13px;color:#fff;padding:13px 14px;box-shadow:0 7px 18px rgba(34,25,25,.14)}
+.preview-profile.enhanced-layout .preview-link span:last-child{color:#fff}.preview-profile.enhanced-layout .preview-social-icon{background:transparent;border-color:transparent;color:#26314b}
+.public-profile.enhanced-layout{--pub-accent:#b77b5b!important;--pub-accent2:#e5b99c!important;width:min(440px,100%);min-height:620px;overflow:hidden;padding:292px 22px 26px;border:1px solid rgba(255,255,255,.26);border-radius:26px;background:#5d698b!important;text-align:center;box-shadow:0 22px 70px rgba(10,17,35,.28)}
+.public-profile.enhanced-layout:before{display:none}.public-profile.enhanced-layout:after{inset:1px;border-radius:25px;background:linear-gradient(180deg,transparent 0,rgba(31,42,68,.06) 38%,#5d698b 49%)}
+.public-profile.enhanced-layout #publicCover{position:absolute;inset:0 0 auto;height:300px;display:block;background-size:cover;background-position:center 25%;z-index:-1;border-radius:25px 25px 0 0}
+.public-profile.enhanced-layout .public-avatar{display:none!important}
+.public-profile.enhanced-layout .profile-name-line{position:relative;justify-content:center;margin:0 0 3px}
+.public-profile.enhanced-layout .profile-name-line h1{color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.4);font-size:1.35rem}
+.public-profile.enhanced-layout .public-username{position:absolute;top:225px;left:14px;right:14px;margin:0;color:#26324f;font-size:1.25rem;font-weight:750;letter-spacing:-.02em;overflow-wrap:anywhere;text-shadow:0 1px 5px rgba(255,255,255,.24)}
+.public-profile.enhanced-layout .public-subtitle,.public-profile.enhanced-layout .public-bio{color:#f7f6f2}
+.public-profile.enhanced-layout .public-links{gap:9px}
+.public-profile.enhanced-layout .public-link{background:#a76d4f;border:0;border-radius:13px;color:#fff;padding:13px 14px;box-shadow:0 7px 18px rgba(32,24,28,.14)}
+.public-profile.enhanced-layout .public-link:hover{background:#b77b5b;transform:translateY(-2px)}
+.public-profile.enhanced-layout .public-link .link-icon{background:transparent;color:#fff}
+.public-profile.enhanced-layout .public-link .external{color:#fff;opacity:.7}
+.public-profile.enhanced-layout .public-social-icons{margin-top:16px;gap:8px}
+.public-profile.enhanced-layout .social-icon-link{background:transparent;border-color:transparent;color:#26314b;box-shadow:none}
+.public-profile.enhanced-layout .public-footer{color:#f1eee8;opacity:.76}
+.public-profile[dir=rtl] .public-link{text-align:right}.public-profile[dir=rtl] .public-link .link-copy{text-align:right}
+.public-link .link-copy{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:1px}
+.public-link .link-label{width:100%;overflow-wrap:anywhere}.public-link .link-followers{color:currentColor}
+.desktop-mobile-qr{position:fixed;right:18px;bottom:18px;z-index:80;display:flex;flex-direction:column;align-items:center;gap:8px;width:158px;padding:13px 12px 11px;border:1px solid rgba(25,33,55,.12);border-radius:17px;background:rgba(255,255,255,.96);color:#1b2440;box-shadow:0 12px 36px rgba(10,16,32,.2);text-align:center;backdrop-filter:blur(14px)}
+.desktop-mobile-qr b{font-size:.86rem;letter-spacing:.01em}.desktop-mobile-qr>div{display:grid;place-items:center;width:124px;height:124px;padding:3px;border-radius:8px;background:#fff}
+.desktop-mobile-qr canvas,.desktop-mobile-qr img{display:block;max-width:118px;max-height:118px}.desktop-mobile-qr small{font-size:.67rem;line-height:1.4;color:#586078}
+@media(max-width:900px){.desktop-mobile-qr{display:none!important}}
+@media(max-width:760px){.link-edit-row{grid-template-columns:minmax(0,1fr);gap:9px}.link-icon-control{display:flex;align-items:center;gap:9px}.link-followers-settings{display:grid;grid-template-columns:1fr 1fr;align-items:end}.link-followers-settings>label:first-child{min-width:0}.link-followers-settings .link-followers-mode-label{grid-column:1/-1}.profile-display-settings{grid-template-columns:1fr}.public-profile.enhanced-layout{min-height:590px;padding:284px 17px 23px}.public-profile.enhanced-layout #publicCover{height:290px}.public-profile.enhanced-layout .public-username{top:218px;font-size:1.12rem}}
+@media(prefers-reduced-motion:reduce){.public-profile.enhanced-layout *,.preview-profile.enhanced-layout *{animation:none!important;transition:none!important}}
