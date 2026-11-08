@@ -26,7 +26,7 @@ function normalizeLinkTarget(value){
 function collectFollowerCounts(){
  const counts={};
  $$('#linkRows .link-edit-row').forEach(row=>{
-  const url=normalizeLinkTarget(row.querySelector('.link-url-input')?.value||'');
+  const rawUrl=normalizeLinkTarget(row.querySelector('.link-url-input')?.value||'');const url=safeUrl(rawUrl)||rawUrl;
   if(!url)return;
   const raw=row.querySelector('.link-follower-input')?.value??'';
   const show=!!row.querySelector('.link-show-followers-input')?.checked;
@@ -76,6 +76,8 @@ function updatePreview(){
     if(!cover.dataset.tempUrl) cover.dataset.tempUrl = URL.createObjectURL(selectedCoverFile);
     cover.style.backgroundImage = `url("${cover.dataset.tempUrl}")`; cover.hidden = false;
   } else if(coverSrc && safeUrl(coverSrc)) { cover.style.backgroundImage = `url("${safeUrl(coverSrc)}")`; cover.hidden = false; }
+  else if(t.enhanced && $('#previewAvatar')?.tagName==='IMG') { cover.style.backgroundImage = `url("${$('#previewAvatar').src}")`; cover.hidden = false; }
+  else if(t.enhanced && src && safeUrl(src)) { cover.style.backgroundImage = `url("${safeUrl(src)}")`; cover.hidden = false; }
   else { cover.style.backgroundImage = ''; cover.hidden = true; }
   const facts=[];
   if(checked('showBirthDate') && val('birthDate')) { const age=ageFromDate(val('birthDate'));if(age!==null)facts.push(t.cardLanguage==='en'?`${age} years old`:`${age} سنة`); }
@@ -184,7 +186,7 @@ async function saveAll(){
     if(selectedFrameBackgroundFile)theme.frameBackgroundUrl=await uploadThemeImage(selectedFrameBackgroundFile,'frame-background');
     else theme.frameBackgroundUrl=safeUrl(val('frameBackgroundUrl'))||'';
     const row={id:profileId,username:slug,display_name:name,subtitle:val('subtitle').trim(),bio:val('bio').trim(),avatar_url:avatarUrl,cover_url:coverUrl,theme,is_published:checked('publishToggle')};
-    const {error:pErr}=await supabase.from('profiles').upsert(row,{onConflict:'id'});if(pErr)throw pErr;
+    const {error:pErr}=await supabase.from('profiles').upsert(row,{onConflict:'id'});if(pErr)throw pErr;window.__linkoraFollowerCounts=theme.followerCounts||{};
     const x={profile_id:profileId,birth_date:val('birthDate')||null,show_birth_date:checked('showBirthDate'),height_cm:val('heightCm')?Number(val('heightCm')):null,show_height:checked('showHeight'),weight_kg:val('weightKg')?Number(val('weightKg')):null,show_weight:checked('showWeight'),location:val('location').trim(),show_location:checked('showLocation'),occupation:val('occupation').trim(),show_occupation:checked('showOccupation')};
     const {error:xErr}=await supabase.from('profile_extras').upsert(x,{onConflict:'profile_id'});if(xErr)throw xErr;
     const keepIds=normalizedLinks.filter(l=>l.id).map(l=>l.id);
