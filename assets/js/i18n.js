@@ -154,7 +154,6 @@
   Object.assign(translations, {
     'لغة محتويات الكارت':'Card content language','العربية — RTL':'Arabic — RTL','English — LTR':'English — LTR',
     'تغيّر لغة عناصر Linkora واتجاه الكارت فقط. الاسم والوصف وتسميات روابطك تظل كما كتبتها.':'Changes Linkora interface labels and card direction only. Your name, bio, and link labels stay exactly as you wrote them.',
-    'Enhance — التصميم المحسّن':'Enhance — refined layout','تصميم بصري راقٍ بصورة عريضة وأزرار مميزة وأيقونات اجتماعية، مستوحى من الصورة المرجعية.':'A refined layout with a wide image, distinctive buttons, and social icons, inspired by your reference image.',
     'تقدر كمان تخفي الرابط بالكامل وتضيف عدد المتابعين بجواره.':'You can also hide a link completely and show its follower count beside it.',
     'عدد المتابعين يمكن إدخاله يدويًا الآن. التحديث التلقائي يحتاج ربط التطبيق واعتماد صلاحيات API الرسمية لكل منصة.':'Follower counts can be entered manually now. Automatic updates require a separate app connection and approved official API permissions for each platform.',
     'إظهار الرابط':'Show link','عدد المتابعين':'Follower count','إظهار العدد':'Show count','طريقة التحديث':'Update method','يدوي':'Manual',
@@ -173,14 +172,6 @@
     'انشر صفحتك أولًا حتى يستطيع الآخرون فتحها.':'Publish your page first so others can open it.',
     'تم نسخ رابط صفحتك.':'Your page link has been copied.','اختَر اسم مستخدم صالح واحفظه أولًا.':'Choose a valid username and save it first.',
     'الإحصاءات لآخر 30 يومًا. قد تستغرق بعض الزيارات لحظات حتى تظهر.':'Analytics for the last 30 days. Some visits may take a moment to appear.'
-  });
-  Object.assign(translations, {
-    'تخصيص ألوان Enhance':'Customize Enhance colors',
-    'غيّر ألوان الخلفية والكارت والروابط والنصوص، وستظهر فورًا في المعاينة.':'Change the page, card, button, and text colors and see them instantly in the preview.',
-    'خلفية الصفحة':'Page background','لون الكارت':'Card color','لون الأزرار':'Button color',
-    'لون النص':'Text color','لون نص الأزرار':'Button text color','لون الأيقونات':'Icon color',
-    'يدوي حاليًا':'Manual for now',
-    'عدد المتابعين يُدخل يدويًا حاليًا. الربط التلقائي غير مفعّل بعد؛ كل منصة تحتاج تطبيق OAuth وصلاحيات API رسمية وربطًا آمنًا على الخادم.':'Follower counts are manual for now. Automatic syncing is not enabled; each platform needs an approved OAuth app, API permissions, and a secure server-side integration.'
   });
   for (const [ar,en] of Object.entries(translations)) if (!reverse.has(en)) reverse.set(en,ar);
   const langKey='linkora-language';
