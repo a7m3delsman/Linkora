@@ -136,6 +136,14 @@
     'جميع الروابط':'All links','لا توجد نتائج مطابقة.':'No matching results.','لا توجد طلبات دعم في هذا التصنيف.':'There are no support requests in this category.',
     'سبب منح العضوية أو التوثيق (اختياري)':'Reason for membership or verification (optional)','إلى:':'To:','العضو المستلم':'Recipient member','الرسالة والتنبيهات الخاصة بحسابك من إدارة المنصة.':'Messages and notifications for your account from platform administration.'
   });
+  Object.assign(translations, {
+    'أقسام التعديل':'Editor sections','اختَر جزءًا واحدًا لعرض إعداداته':'Choose one section to view its settings','Live Preview مفعّلة':'Live Preview is active',
+    'تخصيص الصورة والروابط':'Photo and link customization','تحكم في ترتيب الصورة وأحجام العناصر والحركات بشكل متوازن.':'Control photo placement, element sizes, and animations in a balanced way.',
+    'مكان صورة البروفايل':'Profile photo position','في المنتصف':'Centered','على اليسار':'Left','على اليمين':'Right','يغيّر موضع الصورة داخل الكارت دون التأثير على النصوص.':'Moves the photo inside the card without affecting the text.',
+    'حركة صورة البروفايل':'Profile photo animation','طفو هادئ':'Soft float','تنفّس ناعم':'Gentle breathing','توهج خفيف':'Soft glow','ميلان بسيط':'Subtle sway','حجم الصورة':'Photo size','حجم الروابط':'Link size','متوازن':'Balanced','أصغر':'Smaller','أكبر':'Larger','يضبط ارتفاع البطاقات والأيقونات والخطوط معًا ضمن نطاق مناسب.':'Adjusts card height, icons, and text together within a suitable range.',
+    'تؤثر الحركة على البطاقات المستطيلة فقط؛ الأيقونات الدائرية لها حركة مستقلة.':'This animation affects rectangular cards only; circular icons have their own motion.',
+    'ظهور تدريجي':'Soft fade','انزلاق هادئ':'Gentle slide','طفو خفيف':'Light float','لمعة هادئة':'Soft shimmer','ارتفاع ناعم عند المرور':'Gentle lift on hover','توهج عند المرور':'Glow on hover','نبض هادئ':'Gentle pulse'
+  });
   const reverse = new Map();
   Object.assign(translations, {
     'صور الخلفية الإضافية':'Additional background images',

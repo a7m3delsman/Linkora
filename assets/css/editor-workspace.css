@@ -1,0 +1,72 @@
+/* Linkora editor workspace and balanced appearance controls */
+.app-grid{grid-template-columns:minmax(0,1.4fr) minmax(320px,.9fr);gap:18px}
+.editor-workspace{display:grid;grid-template-columns:minmax(190px,224px) minmax(0,1fr);gap:15px;align-items:start;min-width:0}
+.editor-workspace .editor-form{min-width:0;display:grid;gap:18px}
+.editor-sidebar{position:sticky;top:92px;align-self:start;min-width:0;padding:14px;border:1px solid var(--line);border-radius:21px;background:linear-gradient(155deg,rgba(255,255,255,.055),rgba(255,255,255,.018));box-shadow:0 14px 40px rgba(0,0,0,.12);backdrop-filter:blur(16px)}
+.editor-sidebar-head{display:grid;gap:5px;padding:8px 9px 14px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.editor-sidebar-kicker{font-size:.62rem;letter-spacing:.16em;color:var(--accent-2);font-weight:850}
+.editor-sidebar-head b{font-size:1rem;letter-spacing:-.02em}
+.editor-sidebar-head small{font-size:.74rem;color:var(--muted);line-height:1.55}
+.editor-section-nav{display:grid;gap:6px}
+.editor-nav-item{position:relative;display:flex;align-items:center;gap:10px;width:100%;min-height:45px;padding:9px 10px;border:1px solid transparent;border-radius:13px;background:transparent;color:var(--muted);text-align:start;font:inherit;font-size:.82rem;font-weight:650;cursor:pointer;transition:background .25s ease,border-color .25s ease,color .25s ease,transform .25s ease;}
+.editor-nav-item:hover{color:var(--text);background:rgba(255,255,255,.045);transform:translateY(-1px)}
+.editor-nav-item.active{color:var(--text);border-color:color-mix(in srgb,var(--accent) 38%,transparent);background:linear-gradient(105deg,color-mix(in srgb,var(--accent) 17%,transparent),color-mix(in srgb,var(--accent-2) 8%,transparent));box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 7px 18px rgba(0,0,0,.08)}
+.editor-nav-icon{display:grid;place-items:center;flex:0 0 29px;width:29px;height:29px;border-radius:10px;background:rgba(255,255,255,.055);color:var(--accent-2);font-size:1rem}
+.editor-nav-item.active .editor-nav-icon{background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--text)}
+.editor-nav-item>span:nth-child(2){flex:1;min-width:0;line-height:1.35}
+.editor-nav-arrow{font-size:1.15rem;opacity:.5;transition:transform .25s ease,opacity .25s ease}
+.editor-nav-item.active .editor-nav-arrow{opacity:.9;transform:translateX(-2px)}
+html[dir="ltr"] .editor-nav-item.active .editor-nav-arrow{transform:translateX(2px)}
+.editor-nav-item[hidden]{display:none!important}
+.editor-sidebar-foot{display:flex;align-items:center;gap:8px;margin:13px 8px 3px;padding-top:12px;border-top:1px solid var(--line);font-size:.7rem;color:var(--muted)}
+.editor-live-dot{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#70d9b0;box-shadow:0 0 0 4px rgba(112,217,176,.1),0 0 13px rgba(112,217,176,.45)}
+.editor-form>[data-editor-section][hidden]{display:none!important}
+.editor-section-enter{animation:editor-section-enter .32s cubic-bezier(.2,.75,.25,1) both}
+@keyframes editor-section-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.design-controls-block{padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015))}
+.design-controls-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px}
+.design-controls-heading b{font-size:.95rem}.design-controls-heading p{margin:4px 0 0;line-height:1.55}
+.design-controls-mark{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;border-radius:12px;color:#f2d38b;background:rgba(225,177,76,.11);border:1px solid rgba(225,177,76,.2)}
+.design-controls-grid{gap:17px}
+.range-field input[type="range"]{width:100%;accent-color:var(--accent);padding:0;background:transparent;border:0;box-shadow:none}
+.range-field label{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.range-field output{font-size:.78rem;font-weight:800;color:var(--accent-2);font-variant-numeric:tabular-nums}
+.range-limits{display:flex;justify-content:space-between;color:var(--muted);font-size:.68rem;margin-top:-5px}
+/* Profile photo position and size are intentionally bounded by the editor. */
+.public-profile img.public-avatar{display:block}
+.public-profile .public-avatar,.public-profile .public-avatar.placeholder{width:clamp(84px,var(--avatar-size,112px),156px);height:clamp(84px,var(--avatar-size,112px),156px)}
+.preview-profile img.preview-avatar{display:block}
+.preview-profile .preview-avatar,.preview-profile .preview-avatar-fallback{width:clamp(84px,var(--avatar-size,112px),156px);height:clamp(84px,var(--avatar-size,112px),156px)}
+.public-profile.avatar-position-left .public-avatar,.preview-profile.avatar-position-left .preview-avatar,.preview-profile.avatar-position-left .preview-avatar-fallback{margin-left:0;margin-right:auto}
+.public-profile.avatar-position-right .public-avatar,.preview-profile.avatar-position-right .preview-avatar,.preview-profile.avatar-position-right .preview-avatar-fallback{margin-left:auto;margin-right:0}
+.public-profile.avatar-position-center .public-avatar,.preview-profile.avatar-position-center .preview-avatar,.preview-profile.avatar-position-center .preview-avatar-fallback{margin-left:auto;margin-right:auto}
+/* Profile photo motion presets */
+.public-profile .public-avatar.avatar-motion-float,.preview-profile .preview-avatar.avatar-motion-float,.preview-profile .preview-avatar-fallback.avatar-motion-float{animation:avatar-float 5s ease-in-out infinite}
+.public-profile .public-avatar.avatar-motion-breathe,.preview-profile .preview-avatar.avatar-motion-breathe,.preview-profile .preview-avatar-fallback.avatar-motion-breathe{animation:avatar-breathe 4.8s ease-in-out infinite}
+.public-profile .public-avatar.avatar-motion-glow,.preview-profile .preview-avatar.avatar-motion-glow,.preview-profile .preview-avatar-fallback.avatar-motion-glow{animation:avatar-glow 4.6s ease-in-out infinite}
+.public-profile .public-avatar.avatar-motion-sway,.preview-profile .preview-avatar.avatar-motion-sway,.preview-profile .preview-avatar-fallback.avatar-motion-sway{animation:avatar-sway 6s ease-in-out infinite}
+.public-profile .public-avatar.avatar-motion-none,.preview-profile .preview-avatar.avatar-motion-none,.preview-profile .preview-avatar-fallback.avatar-motion-none{animation:none}
+@keyframes avatar-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes avatar-glow{0%,100%{box-shadow:0 0 0 8px color-mix(in srgb,var(--pub-accent,var(--paccent,#8a7cff)) 10%,transparent),0 0 25px color-mix(in srgb,var(--pub-accent,var(--paccent,#8a7cff)) 20%,transparent)}50%{box-shadow:0 0 0 12px color-mix(in srgb,var(--pub-accent,var(--paccent,#8a7cff)) 12%,transparent),0 0 42px color-mix(in srgb,var(--pub-accent2,var(--paccent2,#62d9cf)) 30%,transparent)}}
+@keyframes avatar-sway{0%,100%{transform:rotate(0) translateY(0)}25%{transform:rotate(1.8deg) translateY(-2px)}75%{transform:rotate(-1.8deg) translateY(-2px)}}
+/* One safe scale controls cards and circular social icons together. */
+.public-links .public-link{min-height:calc(66px * var(--link-scale,1));padding:calc(13px * var(--link-scale,1)) calc(17px * var(--link-scale,1));font-size:calc(.92rem * var(--link-scale,1))}
+.public-links .public-link .link-icon{width:calc(40px * var(--link-scale,1));height:calc(40px * var(--link-scale,1));flex-basis:calc(40px * var(--link-scale,1))}
+.public-links .public-link .link-icon svg{width:calc(22px * var(--link-scale,1));height:calc(22px * var(--link-scale,1))}
+.public-social-icons .social-icon-link{width:calc(58px * var(--link-scale,1));height:calc(58px * var(--link-scale,1));flex-basis:calc(58px * var(--link-scale,1))}
+.public-social-icons .social-icon-link .link-icon svg{width:calc(27px * var(--link-scale,1));height:calc(27px * var(--link-scale,1))}
+.preview-links .preview-link{min-height:calc(49px * var(--link-scale,1));padding:calc(10px * var(--link-scale,1)) calc(12px * var(--link-scale,1));font-size:calc(.88rem * var(--link-scale,1))}
+.preview-links .link-icon-preview{width:calc(27px * var(--link-scale,1));height:calc(27px * var(--link-scale,1));flex-basis:calc(27px * var(--link-scale,1))}
+.preview-social-icons .preview-social-icon{width:calc(34px * var(--link-scale,1));height:calc(34px * var(--link-scale,1));flex-basis:calc(34px * var(--link-scale,1))}
+/* Additional calm link entrance animations */
+.public-links.motion-fade .public-link,.preview-links.motion-fade .preview-link{animation:link-fade-in .65s ease both}
+.public-links.motion-slide .public-link,.preview-links.motion-slide .preview-link{animation:link-slide-in .62s cubic-bezier(.2,.75,.25,1) both}
+.public-links.motion-float .public-link,.preview-links.motion-float .preview-link{animation:link-rise .55s ease both,link-gentle-float 5.2s ease-in-out infinite}
+.public-links.motion-shine .public-link,.preview-links.motion-shine .preview-link{background-image:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.10) 45%,transparent 65%);background-size:220% 100%;animation:link-shine 5s ease-in-out infinite}
+@keyframes link-fade-in{from{opacity:0}to{opacity:1}}
+@keyframes link-slide-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes link-gentle-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes link-shine{0%,65%,100%{background-position:100% 0}35%{background-position:-100% 0}}
+@media(max-width:980px){.app-grid{grid-template-columns:1fr}.editor-workspace{grid-template-columns:minmax(0,1fr);gap:12px}.editor-sidebar{position:relative;top:auto;padding:12px}.editor-sidebar-head{padding:4px 6px 10px}.editor-section-nav{display:flex;gap:7px;overflow-x:auto;overscroll-behavior-inline:contain;padding:1px 1px 7px;scrollbar-width:thin}.editor-nav-item{width:auto;min-width:max-content;min-height:40px;padding:7px 10px}.editor-nav-item>span:nth-child(2){flex:0 0 auto}.editor-nav-arrow{display:none}.editor-sidebar-foot{display:none}}
+@media(max-width:650px){.editor-sidebar{border-radius:16px}.editor-nav-item{font-size:.76rem}.editor-nav-icon{width:26px;height:26px;flex-basis:26px}.design-controls-block{padding:13px}.design-controls-grid{grid-template-columns:1fr}.editor-form{gap:14px}}
+@media(prefers-reduced-motion:reduce){.editor-section-enter,.public-profile .public-avatar,.preview-profile .preview-avatar,.preview-profile .preview-avatar-fallback,.public-links .public-link,.preview-links .preview-link,.public-social-icons .social-icon-link,.preview-social-icons .preview-social-icon{animation:none!important;transition:none!important}}

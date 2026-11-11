@@ -37,7 +37,7 @@ function collectFollowerCounts(){
  return counts;
 }
 
-function currentTheme(){ return { accent:val('accent')||presets.aurora.accent, accent2:val('accent2')||presets.aurora.accent2, background:val('background')||presets.aurora.background, mode:val('mode'), animation:val('animation'), card:val('card'), linkCardStyle:val('linkCardStyle')||'glass', linkAnimation:val('linkAnimation')||'lift', pageBackgroundUrl:val('pageBackgroundUrl').trim(), frameBackgroundUrl:val('frameBackgroundUrl').trim(), cardLanguage:val('cardLanguage')||'ar', followerCounts:collectFollowerCounts() }; }
+function currentTheme(){ return { accent:val('accent')||presets.aurora.accent, accent2:val('accent2')||presets.aurora.accent2, background:val('background')||presets.aurora.background, mode:val('mode'), animation:val('animation'), card:val('card'), linkCardStyle:val('linkCardStyle')||'glass', linkAnimation:val('linkAnimation')||'lift', avatarPosition:['left','right','center'].includes(val('avatarPosition'))?val('avatarPosition'):'center', avatarSize:Math.min(156,Math.max(84,Number(val('avatarSize'))||112)), avatarAnimation:['float','breathe','glow','sway','none'].includes(val('avatarAnimation'))?val('avatarAnimation'):'float', linkScale:Math.min(110,Math.max(90,Number(val('linkScale'))||100)), pageBackgroundUrl:val('pageBackgroundUrl').trim(), frameBackgroundUrl:val('frameBackgroundUrl').trim(), cardLanguage:val('cardLanguage')||'ar', followerCounts:collectFollowerCounts() }; }
 function shareUrl(){ const slug=cleanSlug(val('username')); return slug ? `${new URL('p.html',location.href).href}?u=${encodeURIComponent(slug)}` : ''; }
 function updateShare(){ const url=shareUrl(); $('#shareUrl').value=url; $('#openPublicBtn').href=url || 'p.html'; $('#openPageLink').href=url || 'p.html'; }
 function syncPublish(v){ $('#publishToggle').checked=v; $('#publishBottom').checked=v; }
@@ -58,6 +58,7 @@ function updatePreview(){
   p.style.setProperty('--preview-card-image', frameBg ? `url("${frameBg}")` : 'none');
   p.style.setProperty('--preview-card-overlay', frameBg ? (t.mode==='light'?'rgba(255,255,255,.36)':'rgba(7,10,18,.42)') : 'transparent');
   p.classList.toggle('no-anim',t.animation==='none');p.classList.toggle('card-outline',t.card==='outline');
+  p.classList.remove('avatar-position-left','avatar-position-right','avatar-position-center');p.classList.add(`avatar-position-${t.avatarPosition}`);p.style.setProperty('--avatar-size',`${t.avatarSize}px`);p.style.setProperty('--link-scale',String(t.linkScale/100));
   p.classList.remove('anim-aurora','anim-float','anim-glow','anim-pulse','anim-none');p.classList.add(`anim-${t.animation||'aurora'}`);
   if(t.animation==='float') p.style.setProperty('--angle','0deg');
   p.style.background=t.card==='outline'?'transparent':(t.card==='glass'?(t.mode==='light'?'rgba(248,248,255,.88)':'rgba(18,23,37,.82)'):t.background);
@@ -71,6 +72,8 @@ function updatePreview(){
     else { const img=document.createElement('img');img.id='previewAvatar';img.className='preview-avatar';img.src=safeUrl(src);img.alt='صورة البروفايل';img.onerror=()=>{img.replaceWith(makeAvatarFallback());};avatar.replaceWith(img); }
   } else if(avatar.tagName==='IMG') avatar.replaceWith(makeAvatarFallback());
   else { avatar.textContent=(val('displayName').trim().slice(0,1)||'L').toUpperCase();avatar.className='preview-avatar-fallback'; }
+  const previewAvatar=$('#previewAvatar');previewAvatar.classList.remove('avatar-motion-float','avatar-motion-breathe','avatar-motion-glow','avatar-motion-sway','avatar-motion-none');previewAvatar.classList.add(`avatar-motion-${t.avatarAnimation}`);
+  $('#avatarSizeValue').textContent=`${t.avatarSize} px`;$('#linkScaleValue').textContent=`${t.linkScale}%`;
   const cover = $('#previewCover');
   const coverSrc = val('coverUrl').trim();
   if(selectedCoverFile){
@@ -89,13 +92,13 @@ function updatePreview(){
   const rows=linkRows.map(row=>{const url=normalizeLinkTarget(row.querySelector('.link-url-input').value);return {label:row.querySelector('.link-label-input').value.trim(),url,icon:row.querySelector('.link-icon-input').value.trim(),is_featured:row.querySelector('.link-featured-input').checked,is_enabled:row.querySelector('.link-enabled-input')?.checked!==false,show_as_card:row.querySelector('.link-show-card-input').checked,show_as_icon:row.querySelector('.link-show-icon-input').checked,follower_count:row.querySelector('.link-follower-input')?.value??'',show_follower_count:!!row.querySelector('.link-show-followers-input')?.checked};}).filter(x=>x.is_enabled&&x.label&&safeUrl(x.url));
   linkRows.forEach(row=>{const host=row.querySelector('.link-icon-editor');if(host){const label=row.querySelector('.link-label-input').value.trim(),url=row.querySelector('.link-url-input').value.trim(),icon=row.querySelector('.link-icon-input').value.trim();host.outerHTML=renderLinkIcon(url,label,icon,'link-icon-editor');}});
   const cards=rows.filter(l=>l.show_as_card), icons=rows.filter(l=>l.show_as_icon);
-  const cardHost=$('#previewCards');cardHost.className=`preview-links style-${t.linkCardStyle||'glass'} motion-${t.linkAnimation||'lift'}`;
+  const cardHost=$('#previewCards');cardHost.className=`preview-links style-${t.linkCardStyle||'glass'} motion-${t.linkAnimation||'lift'}`;cardHost.style.setProperty('--link-scale',String(t.linkScale/100));$('#previewSocialIcons').style.setProperty('--link-scale',String(t.linkScale/100));
   cardHost.innerHTML=cards.map(l=>{const count=l.show_follower_count&&l.follower_count!==''?'<small class="link-followers">'+Number(l.follower_count).toLocaleString('en-US')+' '+(t.cardLanguage==='en'?'Followers':'متابع')+'</small>':'';return `<div class="preview-link ${l.is_featured?'featured':''}">${l.is_featured?'<span class="featured-label">✦ Featured</span>':''}<span class="preview-link-main">${renderLinkIcon(l.url,l.label,l.icon,'link-icon-preview')}<span class="preview-link-copy"><span class="preview-link-title" dir="auto">${esc(l.label)}</span>${count}</span></span><span class="preview-external">↗</span></div>`;}).join('');
   $('#previewSocialIcons').innerHTML=icons.map(l=>`<span class="preview-social-icon ${l.is_featured?'featured':''}" title="${esc(l.label)}" aria-label="${esc(l.label)}">${renderLinkIcon(l.url,l.label,l.icon,'link-icon-preview')}</span>`).join('');
   $('#previewCards').hidden=cards.length===0;$('#previewSocialIcons').hidden=icons.length===0;$('#previewLinksEmpty').hidden=cards.length>0||icons.length>0;
   updateShare();
 }
-function makeAvatarFallback(){const d=document.createElement('div');d.id='previewAvatar';d.className='preview-avatar-fallback';d.textContent=(val('displayName').trim().slice(0,1)||'L').toUpperCase();return d;}
+function makeAvatarFallback(){const d=document.createElement('div');d.id='previewAvatar';d.className=`preview-avatar-fallback avatar-motion-${val('avatarAnimation')||'float'}`;d.textContent=(val('displayName').trim().slice(0,1)||'L').toUpperCase();return d;}
 function ageFromDate(s){if(!s)return null;const d=new Date(`${s}T00:00:00`);if(Number.isNaN(d.getTime()))return null;const now=new Date();let a=now.getFullYear()-d.getFullYear();if(now.getMonth()<d.getMonth()||(now.getMonth()===d.getMonth()&&now.getDate()<d.getDate()))a--;return a>=0&&a<=125?a:null;}
 function renderLinkRows(links=[]){
   const host=$('#linkRows');host.innerHTML='';
@@ -125,6 +128,7 @@ async function loadPage(forcedPageId=null){
   supportMode=accountOwnerId!==user.id;
   $('#currentEmail').textContent=(user.email||'')+(supportMode?' · وضع الدعم الفني':'');
   if(supportMode){$('#editorHeading').textContent='تعديل صفحات عضو';$('.page-heading p').textContent='وضع الدعم الفني: اختَر الصفحة المطلوبة ثم احفظ التعديلات.';$('#supportForm').closest('.panel').hidden=true;$('#adminMessagesPanel').hidden=true;}
+  if(supportMode){$$('[data-editor-target="support"],[data-editor-target="messages"]').forEach(button=>button.hidden=true);if($('#editor-support'))$('#editor-support').hidden=true;if($('#adminMessagesPanel'))$('#adminMessagesPanel').hidden=true;}
   const {data:pages,error:pagesError}=await supabase.from('profiles').select('*').eq('owner_id',accountOwnerId).order('created_at',{ascending:true});
   if(pagesError)throw pagesError;
   accountPages=pages||[];
@@ -142,6 +146,7 @@ async function loadPage(forcedPageId=null){
   }
   pageQuota=null;
   renderPageManager();
+  if(supportMode)activateEditorSection('profile');
   if(!supportMode){
     const {data:q,error:qError}=await supabase.rpc('get_my_linkora_page_quota');
     if(!qError){pageQuota=q;renderPageManager();}
@@ -152,7 +157,7 @@ async function loadPage(forcedPageId=null){
   setVal('displayName',profile.display_name);setVal('username',profile.username);setVal('subtitle',profile.subtitle);setVal('bio',profile.bio);currentAvatar=profile.avatar_url||'';setVal('avatarUrl',currentAvatar);setVal('coverUrl',currentCover);
   setVal('birthDate',x?.birth_date||'');setVal('location',x?.location||'');setVal('heightCm',x?.height_cm??'');setVal('weightKg',x?.weight_kg??'');setVal('occupation',x?.occupation||'');
   ['showBirthDate','showLocation','showHeight','showWeight','showOccupation'].forEach(k=>$('#'+k).checked=!!x?.[({showBirthDate:'show_birth_date',showLocation:'show_location',showHeight:'show_height',showWeight:'show_weight',showOccupation:'show_occupation'})[k]]);
-  const t={...presets.aurora,...(profile.theme||{})};['accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation'].forEach(k=>setVal(k,t[k]||({linkCardStyle:'glass',linkAnimation:'lift'}[k]||presets.aurora[k]||'')));setVal('pageBackgroundUrl',t.pageBackgroundUrl||'');setVal('frameBackgroundUrl',t.frameBackgroundUrl||'');setVal('cardLanguage',t.cardLanguage||'ar');window.__linkoraFollowerCounts=t.followerCounts||{};syncPublish(!!profile.is_published);renderLinkRows(savedLinks);updatePreview();
+  const t={...presets.aurora,...(profile.theme||{})};['accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation'].forEach(k=>setVal(k,t[k]||({linkCardStyle:'glass',linkAnimation:'lift'}[k]||presets.aurora[k]||'')));setVal('avatarPosition',['left','right','center'].includes(t.avatarPosition)?t.avatarPosition:'center');setVal('avatarSize',Math.min(156,Math.max(84,Number(t.avatarSize)||112)));setVal('avatarAnimation',['float','breathe','glow','sway','none'].includes(t.avatarAnimation)?t.avatarAnimation:'float');setVal('linkScale',Math.min(110,Math.max(90,Number(t.linkScale)||100)));setVal('pageBackgroundUrl',t.pageBackgroundUrl||'');setVal('frameBackgroundUrl',t.frameBackgroundUrl||'');setVal('cardLanguage',t.cardLanguage||'ar');window.__linkoraFollowerCounts=t.followerCounts||{};syncPublish(!!profile.is_published);renderLinkRows(savedLinks);updatePreview();
   const pageUrl=new URL(location.href);pageUrl.searchParams.set('page',profileId);if(supportMode)pageUrl.searchParams.set('user',accountOwnerId);else pageUrl.searchParams.delete('user');history.replaceState({},'',pageUrl);
   if(profile.theme?.accent) $$('[data-preset]').forEach(b=>b.classList.remove('active'));
   editorDirty=false;$('#saveTopBtn').disabled=false;$('#deletePageBtn').disabled=accountPages.length<=1;await loadTickets();if(!supportMode)await loadAdminMessages();await loadAnalytics();
@@ -305,12 +310,26 @@ async function markAdminMessageRead(button){
   catch(error){toast(error.message||'تعذر تحديث الرسالة.','error');button.disabled=false;}
 }
 
+// Sidebar navigation: show one editing section at a time while keeping Live Preview in place.
+function activateEditorSection(key){
+  const section=$(`[data-editor-section="${key}"]`);
+  const trigger=$(`[data-editor-target="${key}"]`);
+  // A previously inactive section is hidden by design; only skip sections
+  // intentionally unavailable in support mode (their navigation item is hidden).
+  if(!section || trigger?.hidden)return;
+  $$('[data-editor-section]').forEach(item=>{item.hidden=item!==section;item.classList.toggle('editor-section-active',item===section);});
+  $$('[data-editor-target]').forEach(button=>{const active=button.dataset.editorTarget===key;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
+  section.classList.remove('editor-section-enter');void section.offsetWidth;section.classList.add('editor-section-enter');
+}
+$('#editorSectionNav').addEventListener('click',e=>{const button=e.target.closest('[data-editor-target]');if(button)activateEditorSection(button.dataset.editorTarget);});
+activateEditorSection('profile');
+
 // Live preview + controls
 $('#pageSelector').addEventListener('change',e=>{const nextId=e.target.value;if(editorDirty&&!confirm('لديك تغييرات غير محفوظة. هل تريد تجاهلها والانتقال إلى الصفحة الأخرى؟')){e.target.value=profileId;return;}loadPage(nextId).catch(err=>toast(err.message||'تعذر فتح الصفحة.','error'));});
 $('#newPageBtn').addEventListener('click',createPage);
 $('#deletePageBtn').addEventListener('click',deleteCurrentPage);
 $('#profileForm').addEventListener('input',()=>{editorDirty=true;updatePreview();});
-['birthDate','location','heightCm','weightKg','occupation','showBirthDate','showLocation','showHeight','showWeight','showOccupation','accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation','pageBackgroundUrl','frameBackgroundUrl','cardLanguage'].forEach(id=>$('#'+id).addEventListener('input',()=>{editorDirty=true;updatePreview();}));$('#cardLanguage').addEventListener('change',()=>{editorDirty=true;updatePreview();});
+['birthDate','location','heightCm','weightKg','occupation','showBirthDate','showLocation','showHeight','showWeight','showOccupation','accent','accent2','background','mode','animation','card','linkCardStyle','linkAnimation','avatarPosition','avatarSize','avatarAnimation','linkScale','pageBackgroundUrl','frameBackgroundUrl','cardLanguage'].forEach(id=>$('#'+id).addEventListener('input',()=>{editorDirty=true;updatePreview();}));$('#cardLanguage').addEventListener('change',()=>{editorDirty=true;updatePreview();});
 $('#avatarFile').addEventListener('change',()=>{selectedFile=$('#avatarFile').files[0]||null;editorDirty=true;if(selectedFile){setVal('avatarUrl','');}updatePreview();});
 $('#avatarUrl').addEventListener('input',()=>{editorDirty=true;selectedFile=null;$('#avatarFile').value='';updatePreview();});
 $('#coverFile').addEventListener('change',()=>{selectedCoverFile=$('#coverFile').files[0]||null;editorDirty=true;if(selectedCoverFile){setVal('coverUrl','');const cover=$('#previewCover');if(cover.dataset.tempUrl){clearPreviewObjectUrl(cover.dataset.tempUrl);delete cover.dataset.tempUrl;}}updatePreview();});
