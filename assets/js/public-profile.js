@@ -1,5 +1,7 @@
 import { $, supabase, isConfigured, esc, safeUrl, initials } from './core.js';
 import { renderLinkIcon } from './link-icons.js';
+
+if(document.documentElement.dataset.maintenance!=='true'){
 const username=(new URLSearchParams(location.search).get('u')||'').toLowerCase().trim();
 function fail(title,body){$('#publicShell').innerHTML=`<section class="not-found"><div class="brand-mark" style="margin:0 auto 18px">L</div><h1>${esc(title)}</h1><p class="muted">${esc(body)}</p><a class="btn btn-primary" href="index.html">اعرف أكتر عن Linkora ↗</a></section>`;document.title=`${title} — Linkora`;}
 function openAvatar(src){if(!src)return;$('#avatarZoom').src=src;$('#avatarLightbox').hidden=false;document.body.style.overflow='hidden';}
@@ -65,3 +67,5 @@ async function init(){
  }catch(err){console.error(err);fail('حصل خطأ في تحميل الصفحة','تحقق من إعداد قاعدة البيانات ودالة get_public_profile في Supabase.');}
 }
 init();
+
+}

@@ -40,18 +40,18 @@ Deno.serve(async (req: Request) => {
     if (!membership) return json({ error: 'Platform admin access required.' }, 403);
 
     const bucket = admin.storage.from('linkora-avatars');
+    const collectFiles = async (prefix: string): Promise<string[]> => {
+      const { data, error } = await bucket.list(prefix, { limit: 1000 });
+      if (error) throw error;
+      const paths: string[] = [];
+      for (const item of data ?? []) {
+        const fullPath = `${prefix}/${item.name}`;
+        if (!item.id && !item.metadata) paths.push(...await collectFiles(fullPath));
+        else paths.push(fullPath);
+      }
+      return paths;
+    };
     const removeUserFiles = async (userId: string) => {
-      const collectFiles = async (prefix: string): Promise<string[]> => {
-        const { data, error } = await bucket.list(prefix, { limit: 1000 });
-        if (error) throw error;
-        const paths: string[] = [];
-        for (const item of data ?? []) {
-          const fullPath = `${prefix}/${item.name}`;
-          if (!item.id && !item.metadata) paths.push(...await collectFiles(fullPath));
-          else paths.push(fullPath);
-        }
-        return paths;
-      };
       const files = await collectFiles(userId);
       for (let i = 0; i < files.length; i += 100) {
         const { error } = await bucket.remove(files.slice(i, i + 100));
@@ -62,6 +62,13 @@ Deno.serve(async (req: Request) => {
     const body = await req.json().catch(() => ({}));
     const action = String(body.action ?? '');
     const targetUserId = String(body.targetUserId ?? '');
+    if (action === 'set-maintenance') {
+      const enabled = body.enabled === true;
+      const message = String(body.message ?? '').trim().slice(0, 500) || 'الموقع في حالة صيانة حاليًا. سنعود للعمل قريبًا.';
+      const { error } = await admin.from('site_settings').upsert({ id: true, maintenance_mode: enabled, maintenance_message: message, updated_by: caller.id, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+      if (error) throw error;
+      return json({ ok: true, message: enabled ? 'تم تفعيل وضع الصيانة.' : 'تم إيقاف وضع الصيانة.' });
+    }
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(targetUserId)) {
       return json({ error: 'Invalid target user id.' }, 400);
     }
@@ -115,23 +122,28 @@ Deno.serve(async (req: Request) => {
     }
 
     if (action === 'delete-page') {
+      const { data: pages, error: pagesError } = await admin.from('profiles').select('id').eq('owner_id', targetUserId).order('created_at', { ascending: true }).limit(1);
+      if (pagesError) throw pagesError;
+      const primaryPage = pages?.[0];
+      if (!primaryPage) throw new Error('No page found for this account.');
       const { data: targetData, error: getUserError } = await admin.auth.admin.getUserById(targetUserId);
       if (getUserError || !targetData?.user) throw getUserError ?? new Error('User not found.');
       const target = targetData.user;
       const displayName = String(target.user_metadata?.display_name || target.email?.split('@')[0] || 'صفحة جديدة').slice(0, 80);
-      const username = `member-${targetUserId.replaceAll('-', '').slice(0, 8)}`;
-      await removeUserFiles(targetUserId);
-      const { error: deleteError } = await admin.from('profiles').delete().eq('id', targetUserId);
-      if (deleteError) throw deleteError;
-      const { error: createError } = await admin.from('profiles').insert({
-        id: targetUserId, username, display_name: displayName, subtitle: '', bio: '', avatar_url: '',
-        is_published: false,
-        theme: { mode: 'dark', accent: '#8a7cff', accent2: '#62d9cf', background: '#0c101b', animation: 'aurora', card: 'glass' },
-      });
-      if (createError) throw createError;
-      const { error: extrasError } = await admin.from('profile_extras').upsert({ profile_id: targetUserId }, { onConflict: 'profile_id' });
+      const pageFiles = await collectFiles(`${targetUserId}/${primaryPage.id}`);
+      if (primaryPage.id === targetUserId) {
+        const { data: legacyFiles, error: legacyError } = await bucket.list(targetUserId, { limit: 1000 });
+        if (legacyError) throw legacyError;
+        pageFiles.push(...(legacyFiles ?? []).filter(item => item.id || item.metadata).map(item => `${targetUserId}/${item.name}`));
+      }
+      for (let i = 0; i < pageFiles.length; i += 100) { const { error: storageError } = await bucket.remove(pageFiles.slice(i, i + 100)); if (storageError) throw storageError; }
+      const { error: deleteLinksError } = await admin.from('profile_links').delete().eq('profile_id', primaryPage.id);
+      if (deleteLinksError) throw deleteLinksError;
+      const { error: extrasError } = await admin.from('profile_extras').upsert({ profile_id: primaryPage.id, birth_date: null, show_birth_date: false, height_cm: null, show_height: false, weight_kg: null, show_weight: false, location: '', show_location: false, occupation: '', show_occupation: false }, { onConflict: 'profile_id' });
       if (extrasError) throw extrasError;
-      return json({ ok: true, message: 'تم حذف محتوى الصفحة وإعادتها كصفحة فارغة غير منشورة. الحساب ما زال موجودًا.' });
+      const { error: resetError } = await admin.from('profiles').update({ display_name: displayName, subtitle: '', bio: '', avatar_url: '', cover_url: '', is_published: false, theme: { mode: 'dark', accent: '#8a7cff', accent2: '#62d9cf', background: '#0c101b', animation: 'aurora', card: 'glass', linkCardStyle: 'glass', linkAnimation: 'lift', cardLanguage: 'ar', followerCounts: {} } }).eq('id', primaryPage.id);
+      if (resetError) throw resetError;
+      return json({ ok: true, message: 'تمت إعادة ضبط الصفحة الأساسية، وباقي صفحات الحساب لم تتأثر.' });
     }
 
     if (action === 'delete-account') {

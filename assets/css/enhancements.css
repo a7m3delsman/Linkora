@@ -6,21 +6,20 @@
 .link-display-options input{width:15px;height:15px;accent-color:var(--accent);flex:0 0 auto}
 .link-enabled-option{color:var(--accent-2)!important;font-weight:700}
 
-/* The row has four desktop columns; the action group always gets enough width for 3 controls. */
-.link-edit-row{display:grid;grid-template-columns:minmax(125px,1fr) minmax(155px,1.25fr) minmax(145px,.95fr) 112px;gap:9px;align-items:start;min-width:0}
-.link-edit-row>.link-label-wrap,.link-edit-row>.link-url-input,.link-edit-row>.link-icon-control,.link-edit-row>.link-row-actions{min-width:0;max-width:100%}
+/* Stable editor row layout: controls stay inside their own grid tracks. */
+.link-edit-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(120px,.85fr) 112px;gap:8px;align-items:start;min-width:0;overflow:hidden}
+.link-edit-row>*{min-width:0;max-width:100%}
 .link-edit-row>.link-url-input{width:100%;box-sizing:border-box}
 .link-edit-row>.link-icon-control{display:flex;align-items:center;gap:7px;overflow:hidden}
 .link-edit-row>.link-icon-control .link-icon-input{min-width:0;flex:1;width:100%}
-.link-row-actions{display:grid!important;grid-template-columns:repeat(3,34px);gap:5px;align-items:start;justify-content:start;width:112px;min-width:112px;max-width:112px}
-.link-row-actions>.btn{display:inline-grid!important;place-items:center;width:34px;height:36px;min-width:34px;max-width:34px;padding:0!important;margin:0;line-height:1;border-radius:9px;box-sizing:border-box;flex:none;white-space:nowrap}
+.link-row-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,32px));gap:4px;align-items:center;justify-content:end;width:104px;min-width:0;max-width:104px;justify-self:end}
+.link-row-actions>.btn{display:inline-grid!important;place-items:center;width:32px;height:34px;min-width:0;max-width:32px;padding:0!important;margin:0;line-height:1;border-radius:9px;box-sizing:border-box;flex:none;white-space:nowrap}
 .link-row-actions>.btn-danger{font-size:1.05rem}
 .link-followers-settings{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:end;gap:10px 16px;min-width:0;padding-top:9px;border-top:1px solid var(--line)}
 .link-followers-settings>label{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.78rem;white-space:normal;min-width:0}
 .link-followers-settings>label:first-child{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:150px}
 .link-followers-settings input[type=number],.link-followers-settings select{min-width:0;max-width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:rgba(5,8,17,.3);color:var(--text)}
 .link-followers-settings input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent)}
-.link-followers-mode-label{display:flex!important;flex-direction:column;align-items:stretch!important;gap:5px!important}
 .link-followers{display:block;margin-top:3px;font-size:.74rem;font-weight:650;letter-spacing:.01em;opacity:.82;line-height:1.2}
 .preview-link-main>span:last-child{min-width:0}.preview-link-main .link-followers{color:inherit;opacity:.8}
 .public-profile[dir=rtl] .public-link{text-align:right}.public-profile[dir=rtl] .public-link .link-copy{text-align:right}
@@ -34,7 +33,7 @@
 .desktop-mobile-qr>div{display:grid;place-items:center;width:124px;height:124px;padding:3px;border-radius:8px;background:#fff;overflow:hidden}
 .desktop-mobile-qr canvas,.desktop-mobile-qr img{display:block;width:118px!important;height:118px!important;max-width:118px;max-height:118px}
 .desktop-mobile-qr small{font-size:.67rem;line-height:1.4;color:#586078}
-@media(max-width:1100px){
+@media(max-width:1150px){
  .link-edit-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px}
  .link-edit-row>.link-label-wrap{grid-column:1;grid-row:1}
  .link-edit-row>.link-icon-control{grid-column:2;grid-row:1}
@@ -50,6 +49,27 @@
  .link-row-actions>.btn{width:38px;height:38px;min-width:38px;max-width:38px}
  .link-followers-settings{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
  .link-followers-settings>label:first-child{min-width:0}
- .link-followers-settings .link-followers-mode-label{grid-column:1/-1}
 }
 @media(prefers-reduced-motion:reduce){.public-link{animation:none!important;transition:none!important}}
+
+
+/* Multi-page account manager */
+.page-manager{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 22px;flex-wrap:wrap}
+.page-manager-main{display:flex;align-items:center;gap:12px;flex:1 1 380px;min-width:0;flex-wrap:wrap}
+.page-manager-main>div{min-width:150px}
+.page-manager-main select{flex:1 1 190px;min-width:160px;max-width:100%}
+.page-manager-actions{display:flex;gap:8px;flex-wrap:wrap}
+.page-manager-actions .btn{min-height:40px}
+.preview-link-copy{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:2px}
+.preview-link-title{width:100%;min-width:0;overflow-wrap:anywhere}
+.preview-link-copy .link-followers{margin-top:0;font-size:.72rem;opacity:.82}
+.preview-links .preview-link-main{flex:1;min-width:0}
+.preview-links .preview-external{flex:0 0 auto}
+.maintenance-admin-status{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:.78rem;font-weight:800}
+.maintenance-admin-status.is-on{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line));background:color-mix(in srgb,var(--danger) 10%,transparent)}
+.maintenance-admin-status.is-off{color:var(--good)}
+.maintenance-settings-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.maintenance-settings-grid textarea{min-height:84px}
+@media(max-width:900px){.page-manager{align-items:stretch}.page-manager-main{flex-basis:100%}.page-manager-actions{width:100%}.page-manager-actions .btn{flex:1 1 auto}}
+@media(max-width:650px){.page-manager{padding:15px}.page-manager-main{display:grid;grid-template-columns:1fr;gap:8px}.page-manager-main select{width:100%;min-width:0}.page-manager-actions{display:grid;grid-template-columns:1fr 1fr}.page-manager-actions .btn{min-width:0;white-space:normal}.link-row-actions{justify-self:start!important;justify-content:start!important}}
+html.maintenance-checking body{visibility:hidden!important}

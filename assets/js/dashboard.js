@@ -1,5 +1,7 @@
 import { $, supabase, isConfigured, showConfigWarning, requireUser, isAdmin, esc, formatDate, toast, signOut } from './core.js';
 
+if(document.documentElement.dataset.maintenance!=='true'){
+
 let me = null;
 let profiles = [];
 let directory = [];
@@ -34,7 +36,7 @@ async function loadAll() {
   ]);
   for (const r of [p, d, x, t, l, m, mb]) if (r.error) throw r.error;
   // Keep the currently signed-in admin out of member-management views.
-  profiles = (p.data || []).filter(profile => profile.id !== me?.id);
+  profiles = (p.data || []).filter(profile => profile.owner_id !== me?.id);
   directory = (d.data || []).filter(user => user.id !== me?.id);
   extras = x.data || [];
   tickets = t.data || [];
@@ -59,7 +61,7 @@ async function loadAll() {
 function renderStats() {
   const members = getMemberDirectory();
   const memberIds = new Set(members.map(d => d.id));
-  const memberProfiles = profiles.filter(p => memberIds.has(p.id));
+  const memberProfiles = profiles.filter(p => memberIds.has(p.owner_id));
   $('#statUsers').textContent = members.length;
   $('#statPublished').textContent = memberProfiles.filter(p => p.is_published).length;
   $('#statDrafts').textContent = memberProfiles.filter(p => !p.is_published).length;
@@ -71,41 +73,37 @@ function renderStats() {
 function renderUsers() {
   const q = $('#userSearch').value.trim().toLowerCase();
   const filter = $('#statusFilter').value;
-  const rows = getMemberDirectory().map(d => ({ d, p: profiles.find(p => p.id === d.id) || null }));
-  const filtered = rows.filter(({ d, p }) => {
-    const status = d.is_banned ? 'banned' : p?.is_published ? 'published' : 'draft';
+  const rows = getMemberDirectory().map(d => {
+    const pages = profiles.filter(p => p.owner_id === d.id).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    return { d, pages, p: pages[0] || null };
+  });
+  const filtered = rows.filter(({ d, pages, p }) => {
+    const status = d.is_banned ? 'banned' : pages.some(x=>x.is_published) ? 'published' : 'draft';
     if (filter !== 'all' && filter !== status) return false;
-    return [p?.display_name, p?.username, d.email].some(v => String(v || '').toLowerCase().includes(q));
+    return [p?.display_name, p?.username, d.email, ...pages.map(x=>x.username)].some(v => String(v || '').toLowerCase().includes(q));
   });
   $('#userCount').textContent = `${filtered.length} من ${rows.length}`;
-  if (!filtered.length) {
-    $('#usersBody').innerHTML = '<tr><td colspan="5"><div class="empty-state">لا توجد نتائج مطابقة.</div></td></tr>';
-    return;
-  }
-  $('#usersBody').innerHTML = filtered.map(({ d, p }) => {
+  if (!filtered.length) { $('#usersBody').innerHTML = '<tr><td colspan="5"><div class="empty-state">لا توجد نتائج مطابقة.</div></td></tr>'; return; }
+  $('#usersBody').innerHTML = filtered.map(({ d, pages, p }) => {
     const name = p?.display_name || d.email || 'عضو';
-    const avatar = p?.avatar_url
-      ? `<img class="mini-avatar" src="${esc(p.avatar_url)}" alt="" referrerpolicy="no-referrer">`
-      : `<span class="mini-avatar">${esc((name || 'L').slice(0, 1).toUpperCase())}</span>`;
-    const status = d.is_banned ? '<span class="status-pill banned">محظور</span>' : p?.is_published
-      ? '<span class="status-pill published">منشورة</span>'
-      : '<span class="status-pill draft">مسودة</span>';
+    const avatar = p?.avatar_url ? `<img class="mini-avatar" src="${esc(p.avatar_url)}" alt="" referrerpolicy="no-referrer">` : `<span class="mini-avatar">${esc((name || 'L').slice(0, 1).toUpperCase())}</span>`;
+    const status = d.is_banned ? '<span class="status-pill banned">محظور</span>' : pages.some(x=>x.is_published) ? '<span class="status-pill published">لديه صفحة منشورة</span>' : '<span class="status-pill draft">مسودة</span>';
     const membership = memberships.find(m => m.profile_id === d.id) || { tier: 'free', is_verified: false };
     const activeTier = membership.expires_at && new Date(membership.expires_at) <= new Date() ? 'free' : (membership.tier || 'free');
     const tierPill = activeTier === 'vip' ? '<span class="member-badge badge-vip">✦ VIP</span>' : activeTier === 'pro' ? '<span class="member-badge badge-pro">✓ PRO</span>' : '<span class="member-badge badge-free">FREE</span>';
     const verifiedPill = membership.is_verified ? '<span class="member-badge badge-verified" title="Linkora verified">✓</span>' : '';
     const actions = [
       p ? `<button class="btn btn-small" data-action="details" data-id="${esc(d.id)}">تفاصيل</button>` : '',
-      p ? `<a class="btn btn-small" href="editor.html?user=${encodeURIComponent(d.id)}">تعديل</a>` : '',
-      p ? `<a class="btn btn-small" href="${esc(profileUrl(p.username))}" target="_blank" rel="noopener">عرض ↗</a>` : '<span class="muted small">لا توجد صفحة</span>',
-      p ? `<button class="btn btn-small" data-action="publish" data-id="${esc(d.id)}">${p.is_published ? 'إلغاء النشر' : 'نشر'}</button>` : '',
+      p ? `<a class="btn btn-small" href="editor.html?user=${encodeURIComponent(d.id)}&page=${encodeURIComponent(p.id)}">تعديل الصفحات (${pages.length})</a>` : '<span class="muted small">لا توجد صفحة</span>',
+      p ? `<a class="btn btn-small" href="${esc(profileUrl(p.username))}" target="_blank" rel="noopener">عرض ↗</a>` : '',
+      p ? `<button class="btn btn-small" data-action="publish" data-id="${esc(d.id)}" data-page-id="${esc(p.id)}">${p.is_published ? 'إلغاء النشر' : 'نشر'}</button>` : '',
       `<button class="btn btn-small" data-action="reset" data-id="${esc(d.id)}">استعادة كلمة المرور</button>`,
       `<button class="btn btn-small" data-action="message" data-id="${esc(d.id)}">إرسال رسالة</button>`,
-      p ? `<button class="btn btn-small" data-action="delete-page" data-id="${esc(d.id)}">حذف الصفحة</button>` : '',
+      p ? `<button class="btn btn-small" data-action="delete-page" data-id="${esc(d.id)}">إعادة ضبط الصفحة الأساسية</button>` : '',
       `<button class="btn btn-small ${d.is_banned ? '' : 'btn-danger'}" data-action="${d.is_banned ? 'unban' : 'ban'}" data-id="${esc(d.id)}">${d.is_banned ? 'فك الحظر' : 'حظر'}</button>`,
       `<button class="btn btn-small btn-danger" data-action="delete-account" data-id="${esc(d.id)}">حذف الحساب نهائيًا</button>`,
     ].filter(Boolean).join('');
-    return `<tr><td><div class="user-cell">${avatar}<div><b>${esc(name)} ${tierPill} ${verifiedPill}</b><div class="muted small">@${esc(p?.username || '—')}</div></div></div></td><td>${esc(d.email || '—')}</td><td>${status} ${tierPill}</td><td>${formatDate(d.created_at || p?.created_at)}</td><td><div class="table-actions">${actions}</div></td></tr>`;
+    return `<tr><td><div class="user-cell">${avatar}<div><b>${esc(name)} ${tierPill} ${verifiedPill}</b><div class="muted small">@${esc(p?.username || '—')} · ${pages.length} صفحة</div></div></div></td><td>${esc(d.email || '—')}</td><td>${status} ${tierPill}</td><td>${formatDate(d.created_at || p?.created_at)}</td><td><div class="table-actions">${actions}</div></td></tr>`;
   }).join('');
 }
 
@@ -115,7 +113,7 @@ function renderTickets() {
   const host = $('#ticketsHost');
   if (!list.length) { host.innerHTML = '<div class="empty-state">لا توجد طلبات دعم في هذا التصنيف.</div>'; return; }
   host.innerHTML = list.map(t => {
-    const p = profiles.find(p => p.id === t.user_id);
+    const p = profiles.find(p => p.owner_id === t.user_id);
     const d = directory.find(d => d.id === t.user_id);
     return `<article class="ticket-card" data-ticket="${esc(t.id)}"><div class="ticket-top"><div><b>${esc(t.subject)}</b><div class="muted small">${esc(p?.display_name || d?.email || 'عضو')} · ${esc(d?.email || '')} · ${formatDate(t.created_at)}</div></div><span class="status-pill ${statusClass(t.status)}">${statusText(t.status)}</span></div><p>${esc(t.message)}</p><div class="field"><label for="reply-${esc(t.id)}">رد المدير</label><textarea id="reply-${esc(t.id)}" maxlength="5000" rows="3" placeholder="اكتب ردًا يظهر في حساب العضو…">${esc(t.admin_reply || '')}</textarea></div><div class="toolbar" style="margin:9px 0 0"><select class="control ticket-status" style="width:auto"><option value="open" ${t.status === 'open' ? 'selected' : ''}>مفتوح</option><option value="in_progress" ${t.status === 'in_progress' ? 'selected' : ''}>قيد المتابعة</option><option value="closed" ${t.status === 'closed' ? 'selected' : ''}>مغلق</option></select><button class="btn btn-primary btn-small" data-action="reply" data-id="${esc(t.id)}">حفظ الرد والحالة</button><button class="btn btn-small" data-action="message-user" data-user-id="${esc(t.user_id)}">رسالة مباشرة للعضو</button></div></article>`;
   }).join('');
@@ -126,7 +124,7 @@ function renderMessageRecipients() {
   const previous = select.value;
   const members = getMemberDirectory();
   select.innerHTML = '<option value="">اختر العضو المستلم</option>' + members.map(d => {
-    const p = profiles.find(p => p.id === d.id);
+    const p = profiles.find(p => p.owner_id === d.id);
     const label = `${p?.display_name || d.email} — ${d.email}`;
     return `<option value="${esc(d.id)}">${esc(label)}</option>`;
   }).join('');
@@ -138,33 +136,32 @@ function renderAdminMessages() {
   if (!adminMessages.length) { host.innerHTML = '<p class="muted small">لم ترسل رسائل مباشرة بعد.</p>'; return; }
   host.innerHTML = adminMessages.map(m => {
     const d = directory.find(x => x.id === m.user_id);
-    const p = profiles.find(x => x.id === m.user_id);
+    const p = profiles.find(x => x.owner_id === m.user_id);
     return `<article class="ticket-card"><div class="ticket-top"><b>${esc(m.subject)}</b><span class="status-pill ${m.read_at ? 'closed' : 'open'}">${m.read_at ? 'مقروءة' : 'غير مقروءة'}</span></div><div class="muted small">إلى: ${esc(p?.display_name || d?.email || 'عضو')} · ${esc(d?.email || '')} · ${formatDate(m.created_at)}</div><p>${esc(m.message)}</p></article>`;
   }).join('');
 }
 
 function showDetails(id) {
-  const p = profiles.find(x => x.id === id);
+  const pages = profiles.filter(x => x.owner_id === id).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  const p = pages[0];
   if (!p) return;
   const d = directory.find(x => x.id === id) || {};
-  const x = extras.find(x => x.profile_id === id) || {};
+  const x = extras.find(x => x.profile_id === p.id) || {};
   const theme = p.theme || {};
   const fmt = value => value ? esc(value) : '—';
-  const links = profileLinks.filter(l => l.profile_id === id);
-  const linksHtml = links.length ? links.map(l => {
-    const url = safeHref(l.url);
-    return `<div class="ticket-card" style="padding:9px 12px"><b>${esc(l.icon || '↗')} ${esc(l.label)}</b><div class="muted small" style="overflow-wrap:anywhere">${url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(l.url)}</a>` : esc(l.url)}</div><small class="muted">${l.is_enabled ? 'مفعّل' : 'موقوف'}</small></div>`;
-  }).join('') : '<p class="muted small">لا توجد روابط مسجلة.</p>';
+  const links = profileLinks.filter(l => l.profile_id === p.id);
+  const linksHtml = links.length ? links.map(l => { const url=safeHref(l.url);return `<div class="ticket-card" style="padding:9px 12px"><b>${esc(l.icon || '↗')} ${esc(l.label)}</b><div class="muted small" style="overflow-wrap:anywhere">${url?`<a href="${esc(url)}" target="_blank" rel="noopener">${esc(l.url)}</a>`:esc(l.url)}</div><small class="muted">${l.is_enabled?'مفعّل':'موقوف'}</small></div>`;}).join('') : '<p class="muted small">لا توجد روابط مسجلة.</p>';
+  const pagesHtml=pages.map(page=>`<div class="ticket-card" style="padding:10px 12px"><b>${esc(page.display_name||page.username)}</b><div class="muted small">@${esc(page.username)} · ${page.is_published?'منشورة':'مسودة'}</div><div class="nav-actions" style="margin-top:7px"><a class="btn btn-small" href="editor.html?user=${encodeURIComponent(id)}&page=${encodeURIComponent(page.id)}">تعديل</a><a class="btn btn-small" href="${esc(profileUrl(page.username))}" target="_blank" rel="noopener">عرض ↗</a></div></div>`).join('');
   $('#detailsTitle').textContent = `تفاصيل ${p.display_name}`;
-  $('#detailsBody').innerHTML = `<div class="form-grid"><div><span class="muted small">البريد</span><div>${fmt(d.email)}</div></div><div><span class="muted small">اسم المستخدم</span><div>@${fmt(p.username)}</div></div><div><span class="muted small">المسمى</span><div>${fmt(p.subtitle)}</div></div><div><span class="muted small">تاريخ التسجيل</span><div>${formatDate(d.created_at || p.created_at)}</div></div><div class="field full"><span class="muted small">الوصف</span><div style="white-space:pre-wrap">${fmt(p.bio)}</div></div><div><span class="muted small">آخر تحديث</span><div>${formatDate(p.updated_at)}</div></div><div><span class="muted small">حالة الحساب</span><div>${d.is_banned ? 'محظور' : 'نشط'}</div></div><div><span class="muted small">حالة النشر</span><div>${p.is_published ? 'منشورة' : 'مسودة'}</div></div><div><span class="muted small">تاريخ الميلاد (خاص)</span><div>${fmt(x.birth_date)}</div></div><div><span class="muted small">المكان</span><div>${fmt(x.location)}</div></div><div><span class="muted small">الطول</span><div>${x.height_cm ? esc(x.height_cm) + ' سم' : '—'}</div></div><div><span class="muted small">الوزن</span><div>${x.weight_kg ? esc(x.weight_kg) + ' كجم' : '—'}</div></div><div class="field full"><span class="muted small">الدراسة / الوظيفة</span><div>${fmt(x.occupation)}</div></div><div class="field full"><span class="muted small">ألوان الصفحة</span><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:7px"><span style="width:24px;height:24px;border-radius:8px;background:${esc(theme.accent || '#8a7cff')};border:1px solid var(--line)"></span><span>${fmt(theme.accent)}</span><span style="width:24px;height:24px;border-radius:8px;background:${esc(theme.accent2 || '#62d9cf')};border:1px solid var(--line)"></span><span>${fmt(theme.accent2)}</span><span class="muted small">${fmt(theme.animation)} · ${fmt(theme.mode)} · ${fmt(theme.card)}</span></div></div><div class="field full"><span class="muted small">روابط الصفحة (${links.length})</span><div class="ticket-list" style="margin-top:8px">${linksHtml}</div></div></div><div class="divider"></div><div class="nav-actions"><a class="btn btn-primary" href="${esc(profileUrl(p.username))}" target="_blank" rel="noopener">فتح الصفحة العامة ↗</a><a class="btn" href="editor.html?user=${encodeURIComponent(p.id)}">تعديل صفحة العضو</a><button class="btn" data-action="reset" data-id="${esc(id)}">إرسال رابط استعادة كلمة المرور</button><button class="btn" data-action="message" data-id="${esc(id)}">إرسال رسالة للعضو</button><button class="btn" data-action="delete-page" data-id="${esc(id)}">حذف الصفحة</button></div><p class="muted small">لا تطلب من العضو إرسال كلمة المرور أو مشاركة رمز الاستعادة.</p>`;
+  $('#detailsBody').innerHTML = `<div class="form-grid"><div><span class="muted small">البريد</span><div>${fmt(d.email)}</div></div><div><span class="muted small">عدد الصفحات</span><div>${pages.length}</div></div><div><span class="muted small">المسمى</span><div>${fmt(p.subtitle)}</div></div><div><span class="muted small">تاريخ التسجيل</span><div>${formatDate(d.created_at || p.created_at)}</div></div><div class="field full"><span class="muted small">الوصف</span><div style="white-space:pre-wrap">${fmt(p.bio)}</div></div><div><span class="muted small">حالة الحساب</span><div>${d.is_banned?'محظور':'نشط'}</div></div><div><span class="muted small">تاريخ الميلاد (خاص)</span><div>${fmt(x.birth_date)}</div></div><div><span class="muted small">المكان</span><div>${fmt(x.location)}</div></div><div><span class="muted small">الطول</span><div>${x.height_cm?esc(x.height_cm)+' سم':'—'}</div></div><div><span class="muted small">الوزن</span><div>${x.weight_kg?esc(x.weight_kg)+' كجم':'—'}</div></div><div class="field full"><span class="muted small">صفحات الحساب</span><div class="ticket-list" style="margin-top:8px">${pagesHtml}</div></div><div class="field full"><span class="muted small">ألوان الصفحة الأساسية</span><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:7px"><span style="width:24px;height:24px;border-radius:8px;background:${esc(theme.accent||'#8a7cff')};border:1px solid var(--line)"></span><span>${fmt(theme.accent)}</span><span style="width:24px;height:24px;border-radius:8px;background:${esc(theme.accent2||'#62d9cf')};border:1px solid var(--line)"></span><span>${fmt(theme.accent2)}</span><span class="muted small">${fmt(theme.animation)} · ${fmt(theme.mode)} · ${fmt(theme.card)}</span></div></div><div class="field full"><span class="muted small">روابط الصفحة الأساسية (${links.length})</span><div class="ticket-list" style="margin-top:8px">${linksHtml}</div></div></div><div class="divider"></div><div class="nav-actions"><a class="btn btn-primary" href="${esc(profileUrl(p.username))}" target="_blank" rel="noopener">فتح الصفحة العامة ↗</a><a class="btn" href="editor.html?user=${encodeURIComponent(id)}&page=${encodeURIComponent(p.id)}">تعديل صفحات العضو</a><button class="btn" data-action="reset" data-id="${esc(id)}">إرسال رابط استعادة كلمة المرور</button><button class="btn" data-action="message" data-id="${esc(id)}">إرسال رسالة للعضو</button><button class="btn" data-action="delete-page" data-id="${esc(id)}">إعادة ضبط الصفحة الأساسية</button></div><p class="muted small">لا تطلب من العضو إرسال كلمة المرور أو مشاركة رمز الاستعادة.</p>`;
   $('#detailsBackdrop').hidden = false;
-  const membership = memberships.find(m => m.profile_id === id) || { tier: 'free', is_verified: false, show_membership_badge: true, show_verified_badge: true, expires_at: '', admin_note: '' };
+  const membership = memberships.find(m => m.profile_id === id) || { tier:'free',is_verified:false,show_membership_badge:true,show_verified_badge:true,expires_at:'',admin_note:'' };
   const expiryValue = membership.expires_at ? new Date(membership.expires_at).toISOString().slice(0,10) : '';
-  $('#detailsBody').insertAdjacentHTML('beforeend', `<section class="panel membership-admin-panel" style="margin-top:18px"><h3>العضوية والتوثيق</h3><p class="muted small">تظهر الشارة بجوار الاسم في الصفحة العامة. جميع المميزات متاحة حاليًا لكل الأعضاء بغض النظر عن العضوية.</p><div class="form-grid"><div class="field"><label for="membershipTier">نوع العضوية</label><select id="membershipTier" class="control"><option value="free" ${membership.tier==='free'?'selected':''}>Free — مجانية</option><option value="pro" ${membership.tier==='pro'?'selected':''}>Pro — توثيق أزرق</option><option value="vip" ${membership.tier==='vip'?'selected':''}>VIP — شارة ذهبية</option></select></div><div class="field"><label for="membershipExpiry">تاريخ الانتهاء (اختياري)</label><input id="membershipExpiry" type="date" value="${expiryValue}"></div><div class="field full"><label class="check-row"><input id="membershipVerified" type="checkbox" ${membership.is_verified?'checked':''}> منح علامة Linkora Verified لهذا العضو</label></div><div class="field full"><label class="check-row"><input id="membershipShowBadge" type="checkbox" ${membership.show_membership_badge!==false?'checked':''}> إظهار شارة VIP أو Pro في الصفحة العامة</label></div><div class="field full"><label class="check-row"><input id="membershipShowVerified" type="checkbox" ${membership.show_verified_badge!==false?'checked':''}> إظهار علامة التوثيق الزرقاء في الصفحة العامة</label></div><div class="field full"><label for="membershipNote">ملاحظة داخلية للمدير</label><input id="membershipNote" maxlength="500" value="${esc(membership.admin_note||'')}" placeholder="سبب منح العضوية أو التوثيق (اختياري)"></div><div class="field full"><button class="btn btn-primary" type="button" data-action="save-membership" data-id="${esc(id)}">حفظ العضوية والتوثيق</button></div></div></section>`);
+  $('#detailsBody').insertAdjacentHTML('beforeend', `<section class="panel membership-admin-panel" style="margin-top:18px"><h3>العضوية والتوثيق</h3><p class="muted small">تظهر الشارة بجوار الاسم في جميع صفحات العضو. حد الصفحات: Free صفحة واحدة، Pro خمس صفحات، VIP بلا حدود.</p><div class="form-grid"><div class="field"><label for="membershipTier">نوع العضوية</label><select id="membershipTier" class="control"><option value="free" ${membership.tier==='free'?'selected':''}>Free — مجانية</option><option value="pro" ${membership.tier==='pro'?'selected':''}>Pro — توثيق أزرق</option><option value="vip" ${membership.tier==='vip'?'selected':''}>VIP — شارة ذهبية</option></select></div><div class="field"><label for="membershipExpiry">تاريخ الانتهاء (اختياري)</label><input id="membershipExpiry" type="date" value="${expiryValue}"></div><div class="field full"><label class="check-row"><input id="membershipVerified" type="checkbox" ${membership.is_verified?'checked':''}> منح علامة Linkora Verified لهذا العضو</label></div><div class="field full"><label class="check-row"><input id="membershipShowBadge" type="checkbox" ${membership.show_membership_badge!==false?'checked':''}> إظهار شارة VIP أو Pro في الصفحة العامة</label></div><div class="field full"><label class="check-row"><input id="membershipShowVerified" type="checkbox" ${membership.show_verified_badge!==false?'checked':''}> إظهار علامة التوثيق الزرقاء في الصفحة العامة</label></div><div class="field full"><label for="membershipNote">ملاحظة داخلية للمدير</label><input id="membershipNote" maxlength="500" value="${esc(membership.admin_note||'')}" placeholder="سبب منح العضوية أو التوثيق (اختياري)"></div><div class="field full"><button class="btn btn-primary" type="button" data-action="save-membership" data-id="${esc(id)}">حفظ العضوية والتوثيق</button></div></div></section>`);
 }
 
 async function invokeAdmin(action, targetUserId, extra = {}) {
-  const { data, error } = await supabase.functions.invoke('linkora-admin', { body: { action, targetUserId, ...extra } });
+  const { data, error } = await supabase.functions.invoke('linkora-admin', { body: { action, ...(targetUserId ? { targetUserId } : {}), ...extra } });
   if (error) {
     let detail = error.message || 'تعذر تنفيذ الإجراء الإداري.';
     try { const context = error.context; if (context?.json) { const body = await context.json(); detail = body.error || detail; } } catch { /* keep SDK message */ }
@@ -185,7 +182,7 @@ async function adminAction(action, id, button) {
     toast('لا يمكنك تنفيذ إجراءات إدارية على حساب المدير الحالي.', 'error');
     return;
   }
-  const p = profiles.find(x => x.id === id);
+  const p = profiles.filter(x => x.owner_id === id).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))[0];
   const d = directory.find(x => x.id === id);
   if (action === 'details') { showDetails(id); return; }
   if (action === 'save-membership') {
@@ -207,9 +204,11 @@ async function adminAction(action, id, button) {
     if (!p) return;
     button.disabled = true;
     try {
-      const { error } = await supabase.from('profiles').update({ is_published: !p.is_published }).eq('id', id);
+      const pageId = button.dataset.pageId || p.id;
+      const targetPage = profiles.find(x=>x.id===pageId) || p;
+      const { error } = await supabase.from('profiles').update({ is_published: !targetPage.is_published }).eq('id', pageId);
       if (error) throw error;
-      toast(p.is_published ? 'تم إلغاء نشر الصفحة.' : 'تم نشر الصفحة.', 'success');
+      toast(targetPage.is_published ? 'تم إلغاء نشر الصفحة.' : 'تم نشر الصفحة.', 'success');
       await loadAll();
     } catch (error) { toast(error.message || 'تعذر تغيير حالة النشر.', 'error'); }
     finally { button.disabled = false; }
@@ -229,7 +228,7 @@ async function adminAction(action, id, button) {
     return;
   }
   if (action === 'delete-page') {
-    if (!confirm(`حذف محتوى صفحة ${p?.display_name || d?.email}؟ سيُمسح محتوى الصفحة والروابط والصورة، ويُعاد الملف كمسودة فارغة. الحساب سيظل موجودًا.`)) return;
+    if (!confirm(`إعادة ضبط الصفحة الأساسية لحساب ${d?.email || p?.display_name}؟ سيتم مسح بيانات الصفحة وروابطها وإعادتها كمسودة فارغة، مع الاحتفاظ بباقي صفحات الحساب.`)) return;
     button.disabled = true;
     try { const result = await invokeAdmin('delete-page', id); toast(result.message || 'تم حذف محتوى الصفحة.', 'success'); $('#detailsBackdrop').hidden = true; await loadAll(); }
     catch (error) { toast(error.message, 'error'); }
@@ -323,6 +322,24 @@ $('#saveMyMembership').addEventListener('click', async () => {
   finally { button.disabled = false; }
 });
 
+
+async function loadMaintenanceSettings(){
+  const {data,error}=await supabase.rpc('get_linkora_site_status');
+  if(error)throw error;
+  const enabled=!!data?.maintenance_mode;
+  $('#maintenanceEnabled').checked=enabled;
+  $('#maintenanceMessage').value=data?.message||'';
+  const badge=$('#maintenanceStatus');badge.textContent=enabled?'● الصيانة مفعّلة':'● الموقع يعمل';badge.className=`maintenance-admin-status ${enabled?'is-on':'is-off'}`;
+}
+$('#saveMaintenanceBtn').addEventListener('click',async()=>{
+  const button=$('#saveMaintenanceBtn');button.disabled=true;
+  try{
+    const result=await invokeAdmin('set-maintenance','',{enabled:$('#maintenanceEnabled').checked,message:$('#maintenanceMessage').value.trim()});
+    toast(result.message||'تم حفظ إعدادات الصيانة.','success');await loadMaintenanceSettings();
+  }catch(error){toast(error.message||'تعذر حفظ إعدادات الصيانة.','error');}
+  finally{button.disabled=false;}
+});
+
 $('#adminMessageForm').addEventListener('submit', sendDirectMessage);
 $('#userSearch').addEventListener('input', renderUsers);
 $('#statusFilter').addEventListener('change', renderUsers);
@@ -343,8 +360,10 @@ if (isConfigured) {
     $('#adminEmail').textContent = me.email || '';
     const admin = await isAdmin(me.id);
     if (!admin) $('#deniedPanel').hidden = false;
-    else { $('#adminArea').hidden = false; await loadAll(); }
+    else { $('#adminArea').hidden = false; await loadAll(); await loadMaintenanceSettings(); }
   } catch (error) {
     if (!String(error.message || '').includes('Sign in required')) toast(error.message || 'تعذر فتح لوحة المدير.', 'error');
   }
+}
+
 }

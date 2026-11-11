@@ -155,13 +155,12 @@
     'لغة محتويات الكارت':'Card content language','العربية — RTL':'Arabic — RTL','English — LTR':'English — LTR',
     'تغيّر لغة عناصر Linkora واتجاه الكارت فقط. الاسم والوصف وتسميات روابطك تظل كما كتبتها.':'Changes Linkora interface labels and card direction only. Your name, bio, and link labels stay exactly as you wrote them.',
     'تقدر كمان تخفي الرابط بالكامل وتضيف عدد المتابعين بجواره.':'You can also hide a link completely and show its follower count beside it.',
-    'عدد المتابعين يمكن إدخاله يدويًا الآن. التحديث التلقائي يحتاج ربط التطبيق واعتماد صلاحيات API الرسمية لكل منصة.':'Follower counts can be entered manually now. Automatic updates require a separate app connection and approved official API permissions for each platform.',
-    'إظهار الرابط':'Show link','عدد المتابعين':'Follower count','إظهار العدد':'Show count','طريقة التحديث':'Update method','يدوي':'Manual',
-    'تلقائي (بعد ربط API)':'Automatic (after API connection)','مثال: 12500':'Example: 12500',
+    'إظهار الرابط':'Show link','عدد المتابعين':'Follower count','إظهار العدد':'Show count','يدوي':'Manual',
+    'مثال: 12500':'Example: 12500',
     'أدخل رابطًا أو بريدًا إلكترونيًا أو رقم هاتف صحيحًا.':'Enter a valid link, email address, or phone number.',
     'Card content language':'لغة محتويات الكارت','Arabic — RTL':'العربية — RTL','English — LTR':'English — LTR',
-    'Show link':'إظهار الرابط','Follower count':'عدد المتابعين','Show count':'إظهار العدد','Update method':'طريقة التحديث',
-    'Manual':'يدوي','Automatic (after API connection)':'تلقائي (بعد ربط API)',
+    'Show link':'إظهار الرابط','Follower count':'عدد المتابعين','Show count':'إظهار العدد',
+    'Manual':'يدوي',
     'No links have been added to this page yet.':'لم تتم إضافة روابط إلى هذه الصفحة بعد.',
     'Created with Linkora':'صُنع باستخدام Linkora','years old':'سنة','Followers':'متابع',
     'معاينة مباشرة':'Live preview','شكل الصفحة كما سيظهر للزوار':'How your page looks to visitors',
@@ -173,6 +172,26 @@
     'تم نسخ رابط صفحتك.':'Your page link has been copied.','اختَر اسم مستخدم صالح واحفظه أولًا.':'Choose a valid username and save it first.',
     'الإحصاءات لآخر 30 يومًا. قد تستغرق بعض الزيارات لحظات حتى تظهر.':'Analytics for the last 30 days. Some visits may take a moment to appear.'
   });
+  Object.assign(translations, {
+    'صفحات حسابك':'Your pages','أنشئ صفحات مختلفة من نفس البريد، واختَر الصفحة التي تريد تعديلها.':'Create multiple pages with the same email and choose which page to edit.','صفحة':'page','صفحات':'pages','عدد الصفحات':'Number of pages','صفحات الحساب':'Account pages','تم حفظ إعدادات الصيانة.':'Maintenance settings saved.','تعذر حفظ إعدادات الصيانة.':'Could not save maintenance settings.','لم يتم استلام معرّف الصفحة الجديدة.':'The new page ID was not returned.','وضع الدعم الفني: اختَر الصفحة المطلوبة ثم احفظ التعديلات.':'Support mode: select the page you want to edit, then save your changes.','تعديل صفحات عضو':'Edit a member’s pages','تعديل صفحات العضو':'Edit member pages','لديك تغييرات غير محفوظة. هل تريد تجاهلها والانتقال إلى الصفحة الأخرى؟':'You have unsaved changes. Discard them and switch to another page?','لديك تغييرات غير محفوظة. سيتم تجاهلها عند إنشاء الصفحة الجديدة. هل تريد المتابعة؟':'You have unsaved changes. They will be discarded when creating a new page. Continue?','هل أنت متأكد من حذف الصفحة الحالية؟ سيتم حذف بياناتها وروابطها، وأي تعديلات غير محفوظة، ولن يمكن التراجع.':'Are you sure you want to delete the current page? Its details, links, and unsaved changes will be deleted. This cannot be undone.',
+    'اختيار الصفحة':'Choose a page','＋ صفحة جديدة':'＋ New page','حذف الصفحة الحالية':'Delete current page','صفحة جديدة':'New page',
+    'FREE':'FREE','PRO':'PRO','VIP':'VIP','وضع الدعم الفني':'Support mode','صفحات حسابك':'Your pages',
+    'أدخل عدد المتابعين يدويًا، واختَر إذا كنت تريد إظهاره بجوار الرابط.':'Enter the follower count manually and choose whether to show it beside the link.',
+    'وصلت للحد الأقصى لعدد الصفحات في عضويتك الحالية.':'You have reached the page limit for your current membership.',
+    'تم إنشاء صفحة جديدة بنجاح.':'A new page was created successfully.','تعذر إنشاء الصفحة.':'Could not create the page.',
+    'تم حذف الصفحة.':'The page was deleted.','تعذر حذف الصفحة.':'Could not delete the page.',
+    'هل أنت متأكد من حذف الصفحة الحالية؟ سيتم حذف بياناتها وروابطها، ولن يمكن التراجع.':'Are you sure you want to delete this page? Its details and links will be deleted. This cannot be undone.',
+    'لا توجد صفحات لهذا الحساب. تأكد من تشغيل ترقية تعدد الصفحات في Supabase.':'No pages were found for this account. Make sure the multi-page Supabase migration has been run.',
+    'حد الصفحات: Free صفحة واحدة، Pro خمس صفحات، VIP بلا حدود.':'Page limits: Free 1 page, Pro 5 pages, VIP unlimited.',
+    'وضع صيانة الموقع':'Website maintenance mode','عند التفعيل، يرى الزوار والأعضاء رسالة الصيانة بدل صفحات الموقع وتسجيل الدخول. يظل المدير قادرًا على دخول لوحة التحكم.':'When enabled, visitors and members see the maintenance notice instead of the site and sign-in pages. The administrator can still access the dashboard.',
+    'تفعيل وضع الصيانة':'Enable maintenance mode','الرسالة التي تظهر للزوار':'Message shown to visitors','حفظ إعدادات الصيانة':'Save maintenance settings',
+    '● الموقع يعمل':'● Website is online','● الصيانة مفعّلة':'● Maintenance is enabled','تم تفعيل وضع الصيانة.':'Maintenance mode enabled.','تم إيقاف وضع الصيانة.':'Maintenance mode disabled.',
+    'الموقع في حالة صيانة حاليًا. سنعود للعمل قريبًا.':'The website is currently under maintenance. We will be back soon.',
+    'إعادة ضبط الصفحة الأساسية':'Reset primary page','إعادة ضبط الصفحة الأساسية لحساب':'Reset the primary page for account','إعادة ضبط الصفحة الأساسية، وباقي صفحات الحساب لم تتأثر.':'The primary page was reset. Other pages were not affected.',
+    'صفحات العضو':'Member pages','تعديل صفحات عضو':'Edit member pages','تعديل صفحات العضو':'Edit member pages','صفحة':'page','صفحات':'pages','عدد الصفحات':'Number of pages','صفحات الحساب':'Account pages','تم حفظ إعدادات الصيانة.':'Maintenance settings saved.','تعذر حفظ إعدادات الصيانة.':'Could not save maintenance settings.','لم يتم استلام معرّف الصفحة الجديدة.':'The new page ID was not returned.',
+    'لديه صفحة منشورة':'Has a published page','تعديل الصفحات':'Edit pages','تعديل صفحات العضو':'Edit member pages','صفحة أساسية':'Primary page',
+    'أنشئ صفحة شخصية تجمع روابطك وصورتك ومعلوماتك في تصميم يعبر عنك.':'Create a personal page for your links, photo, and information in a design that represents you.'
+  });
   for (const [ar,en] of Object.entries(translations)) if (!reverse.has(en)) reverse.set(en,ar);
   const langKey='linkora-language';
   const getLang=()=>localStorage.getItem(langKey)==='en'?'en':'ar';
@@ -183,6 +202,9 @@
     if(exact!==undefined)return raw.replace(trimmed,exact);
     const patterns=lang==='en' ? [
       [/^روابط الصفحة \((\d+)\)$/, 'Profile links ($1)'],
+      [/^تعديل صفحات العضو \((\d+)\)$/, 'Edit member pages ($1)'],
+      [/^إعادة ضبط الصفحة الأساسية لحساب (.+)؟ سيتم مسح بيانات الصفحة وروابطها وإعادتها كمسودة فارغة، مع الاحتفاظ بباقي صفحات الحساب\.$/, 'Reset the primary page for account $1? The page details and links will be cleared and reset to a blank draft. Other account pages will remain.'],
+      [/^(FREE|PRO|VIP) · (\d+) \/ (\d+|∞) (صفحة|صفحات)$/, '$1 · $2 / $3 pages'],
       [/^(\d+) سنة$/, '$1 years old'],
       [/^↕ (.+) سم$/, 'Height: $1 cm'],
       [/^⚖ (.+) كجم$/, 'Weight: $1 kg'],
@@ -198,6 +220,9 @@
       [/^تأكيد أخير: هل أنت متأكد من الحذف النهائي\؟$/, 'Final confirmation: are you sure you want to permanently delete this account?']
     ] : [
       [/^Profile links \((\d+)\)$/, 'روابط الصفحة ($1)'],
+      [/^Edit member pages \((\d+)\)$/, 'تعديل صفحات العضو ($1)'],
+      [/^(FREE|PRO|VIP) · (\d+) \/ (\d+|∞) pages$/, '$1 · $2 / $3 صفحات'],
+      [/^(\d+) \/ (\d+|∞) صفحات?$/, '$1 / $2 pages'],
       [/^(\d+) years old$/, '$1 سنة'],
       [/^Height: (.+) cm$/, '↕ $1 سم'],
       [/^Weight: (.+) kg$/, '⚖ $1 كجم'],

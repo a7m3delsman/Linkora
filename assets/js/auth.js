@@ -1,5 +1,7 @@
 import { $, $$, supabase, isConfigured, showConfigWarning, appUrl } from './core.js';
 
+if(document.documentElement.dataset.maintenance!=='true'){
+
 $('#year').textContent = new Date().getFullYear();
 
 const form = $('#authForm');
@@ -252,3 +254,5 @@ form.addEventListener('submit', async event => {
     }
   }
 });
+
+}
